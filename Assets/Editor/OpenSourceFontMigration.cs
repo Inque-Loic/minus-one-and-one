@@ -5,6 +5,7 @@ using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.TextCore.LowLevel;
 using UnityEngine.TextCore;
+using Object = UnityEngine.Object;
 
 public static class OpenSourceFontMigration
 {
@@ -21,12 +22,19 @@ public static class OpenSourceFontMigration
         {
             if (EditorUtility.IsPersistent(text)) continue;
             Undo.RecordObject(text, "Apply Noto font");
-            text.font = fontAsset;
-            text.fontSharedMaterial = fontAsset.material;
-            text.fontMaterial = null;
-            text.SetAllDirty();
+            ApplyFontToText(text, fontAsset);
             EditorUtility.SetDirty(text);
         }
+
+        foreach (TMP_InputField inputField in Resources.FindObjectsOfTypeAll<TMP_InputField>())
+        {
+            if (EditorUtility.IsPersistent(inputField)) continue;
+            Undo.RecordObject(inputField, "Apply Noto font");
+            ApplyFontToInputField(inputField, fontAsset);
+            EditorUtility.SetDirty(inputField);
+        }
+
+        RemoveSceneMaterialOverrides();
 
         ApplyFontToPrefab(fontAsset, "Assets/PlayerButton.prefab");
         ApplyFontToPrefab(fontAsset, "Assets/DiscussionTargetButton.prefab");
@@ -44,6 +52,40 @@ public static class OpenSourceFontMigration
 
         AssetDatabase.SaveAssets();
         Debug.Log("Noto Sans CJK SC dynamic font has been created and applied.");
+    }
+
+    [MenuItem("Tools/Minus One And One/Clear TMP Material Overrides")]
+    public static void ClearTmpMaterialOverrides()
+    {
+        foreach (TextMeshProUGUI text in Resources.FindObjectsOfTypeAll<TextMeshProUGUI>())
+        {
+            if (EditorUtility.IsPersistent(text)) continue;
+            Undo.RecordObject(text, "Clear TMP material overrides");
+            ClearMaterialOverrides(text);
+            text.SetAllDirty();
+            EditorUtility.SetDirty(text);
+        }
+
+        RemoveSceneMaterialOverrides();
+        EditorSceneManager.MarkAllScenesDirty();
+        AssetDatabase.SaveAssets();
+        Debug.Log("TMP material overrides have been cleared.");
+    }
+
+    [MenuItem("Tools/Minus One And One/Restore TMP Text Visibility")]
+    public static void RestoreTmpTextVisibility()
+    {
+        foreach (TextMeshProUGUI text in Resources.FindObjectsOfTypeAll<TextMeshProUGUI>())
+        {
+            if (EditorUtility.IsPersistent(text)) continue;
+            Undo.RecordObject(text, "Restore TMP text visibility");
+            text.enabled = true;
+            text.SetAllDirty();
+            EditorUtility.SetDirty(text);
+        }
+
+        EditorSceneManager.MarkAllScenesDirty();
+        Debug.Log("TMP text visibility has been restored.");
     }
 
     static TMP_FontAsset EnsureFontAsset()
@@ -166,10 +208,13 @@ public static class OpenSourceFontMigration
         bool changed = false;
         foreach (TextMeshProUGUI text in prefabRoot.GetComponentsInChildren<TextMeshProUGUI>(true))
         {
-            text.font = fontAsset;
-            text.fontSharedMaterial = fontAsset.material;
-            text.fontMaterial = null;
-            text.SetAllDirty();
+            ApplyFontToText(text, fontAsset);
+            changed = true;
+        }
+
+        foreach (TMP_InputField inputField in prefabRoot.GetComponentsInChildren<TMP_InputField>(true))
+        {
+            ApplyFontToInputField(inputField, fontAsset);
             changed = true;
         }
 
@@ -177,5 +222,54 @@ public static class OpenSourceFontMigration
             PrefabUtility.SaveAsPrefabAsset(prefabRoot, prefabPath);
 
         PrefabUtility.UnloadPrefabContents(prefabRoot);
+    }
+
+    static void ApplyFontToText(TextMeshProUGUI text, TMP_FontAsset fontAsset)
+    {
+        text.enabled = true;
+        text.font = fontAsset;
+        text.fontSharedMaterial = fontAsset.material;
+        ClearMaterialOverrides(text);
+        text.SetAllDirty();
+    }
+
+    static void ClearMaterialOverrides(TextMeshProUGUI text)
+    {
+        SerializedObject serialized = new SerializedObject(text);
+
+        SerializedProperty fontMaterial = serialized.FindProperty("m_fontMaterial");
+        if (fontMaterial != null)
+            fontMaterial.objectReferenceValue = null;
+
+        SerializedProperty fontMaterials = serialized.FindProperty("m_fontMaterials");
+        if (fontMaterials != null)
+            fontMaterials.ClearArray();
+
+        SerializedProperty fontSharedMaterials = serialized.FindProperty("m_fontSharedMaterials");
+        if (fontSharedMaterials != null)
+            fontSharedMaterials.ClearArray();
+
+        serialized.ApplyModifiedPropertiesWithoutUndo();
+    }
+
+    static void ApplyFontToInputField(TMP_InputField inputField, TMP_FontAsset fontAsset)
+    {
+        inputField.fontAsset = fontAsset;
+
+        SerializedObject serialized = new SerializedObject(inputField);
+        SerializedProperty globalFontAsset = serialized.FindProperty("m_GlobalFontAsset");
+        if (globalFontAsset != null)
+            globalFontAsset.objectReferenceValue = fontAsset;
+        serialized.ApplyModifiedPropertiesWithoutUndo();
+    }
+
+    static void RemoveSceneMaterialOverrides()
+    {
+        foreach (Material material in Resources.FindObjectsOfTypeAll<Material>())
+        {
+            if (EditorUtility.IsPersistent(material)) continue;
+            if (!material.name.StartsWith("NotoSansCJKsc Dynamic Atlas Material (Instance)")) continue;
+            Object.DestroyImmediate(material);
+        }
     }
 }

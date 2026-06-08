@@ -679,9 +679,9 @@ public class UIManager : MonoBehaviour
         ResolveChineseFont();
         if (chineseFont == null) return;
 
+        target.enabled = true;
         target.font = chineseFont;
         target.fontSharedMaterial = chineseFont.material;
-        target.fontMaterial = chineseFont.material;
     }
 
     void ApplyChineseFontToSceneTexts()
@@ -711,9 +711,9 @@ public class UIManager : MonoBehaviour
         bool changed = false;
         foreach (TextMeshProUGUI text in prefab.GetComponentsInChildren<TextMeshProUGUI>(true))
         {
+            text.enabled = true;
             text.font = chineseFont;
             text.fontSharedMaterial = chineseFont.material;
-            text.fontMaterial = chineseFont.material;
             text.raycastTarget = false;
             UnityEditor.EditorUtility.SetDirty(text);
             changed = true;
@@ -806,6 +806,7 @@ public class UIManager : MonoBehaviour
 
         SetRect(textTransform, position, size);
         textTransform.SetAsLastSibling();
+        text.enabled = true;
         text.text = content;
         text.fontSize = fontSize;
         text.color = color;
@@ -891,6 +892,7 @@ public class UIManager : MonoBehaviour
         TextMeshProUGUI text = buttonTransform.GetComponentInChildren<TextMeshProUGUI>(true);
         if (text != null)
         {
+            text.enabled = true;
             text.text = label;
             text.fontSize = 28f;
             text.color = Color.white;
