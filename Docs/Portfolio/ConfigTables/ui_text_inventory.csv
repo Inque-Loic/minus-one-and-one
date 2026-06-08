@@ -1,0 +1,15 @@
+﻿id,screen,text_key,current_usage,required_fix,priority
+TXT001,Identity,identity_good,好人身份说明,确认中文编码；说明“一阵营目标”和接触收益,P0
+TXT002,Identity,identity_villain,负一身份说明,确认中文编码；展示同伴列表和伪装目标,P0
+TXT003,Game,round_text,第 N 回合,确认回合数显示为当前/总回合,P0
+TXT004,Game,turn_info,当前行动提示,区分人类回合和 AI 行动中状态,P0
+TXT005,Game,message_text,操作反馈,接触/拒绝/放弃/坏人行动提示需要可复盘,P0
+TXT006,Game,skip_button,放弃按钮,说明连续放弃限制，不可用时给原因,P1
+TXT007,Response,response_text,接受/拒绝弹窗,说明对方身份未知、拒绝限制和当前选择后果,P1
+TXT008,Discussion,discussion_prompt,讨论提示,减少模板感，明确当前发言人,P1
+TXT009,Discussion,message_item,发言内容,统一声明/指控/辩护格式,P1
+TXT010,Guessing,guessing_prompt,猜分提示,说明猜分奖励和跳过不会直接惩罚,P1
+TXT011,Guessing,guessing_result,猜分结算,修正换行与箭头符号，展示猜对数和奖惩,P0
+TXT012,End,final_scores,最终排名,增加阵营胜负、身份揭示、关键事件摘要,P0
+TXT013,Test,test_stats,批量测试统计,补充胜率、平均分、样本数、参数版本,P1
+

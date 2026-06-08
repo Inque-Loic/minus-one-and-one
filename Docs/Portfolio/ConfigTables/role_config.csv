@@ -1,0 +1,3 @@
+﻿role_id,role_name,camp,start_score,knows_allies,contact_good_delta_self,contact_good_delta_target,contact_same_camp_delta_self,contact_same_camp_delta_target,design_note
+ROLE_GOOD,One,Good,1,false,1,1,1,1,Baseline good-side role; gains score through safe contact with good players.
+ROLE_VILLAIN,MinusOne,Villain,-1,true,1,-1,0,0,Baseline villain-side role; gains score from contacting good players and lowers the target score.

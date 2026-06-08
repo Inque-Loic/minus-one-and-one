@@ -1,0 +1,47 @@
+# Unity generated files
+[Ll]ibrary/
+[Tt]emp/
+[Oo]bj/
+[Bb]uild/
+[Bb]uilds/
+[Ll]ogs/
+[Uu]ser[Ss]ettings/
+
+# Unity cache and crash output
+MemoryCaptures/
+Recordings/
+Assets/_Recovery/
+Assets/_Recovery.meta
+Assets/Resources/
+Assets/Resources.meta
+*.pidb
+*.booproj
+*.svd
+*.pdb
+*.mdb
+*.opendb
+*.VC.db
+
+# IDE files
+.vs/
+.vscode/
+.idea/
+*.csproj
+*.sln
+*.suo
+*.user
+*.userprefs
+
+# Local agent/editor config
+.claude/
+.codex/
+.mcp.json
+
+# Proprietary local font experiments; the public project uses Noto Sans CJK.
+Assets/Fonts/MSYH*
+Assets/Fonts/msyh_chinese*
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini

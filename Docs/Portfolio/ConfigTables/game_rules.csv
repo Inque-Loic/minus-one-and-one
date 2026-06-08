@@ -1,0 +1,14 @@
+﻿id,category,field,current_value,recommended_demo_value,description,source
+GR001,player,totalPlayers,8,8,单局总玩家数,GameManager.totalPlayers
+GR002,player,villainCount,2,2,负一阵营人数,GameManager.villainCount
+GR003,round,maxRounds,7,7,最大回合数,GameManager.maxRounds
+GR004,score,goodPlayerStartScore,1,1,一阵营初始分,GameManager.goodPlayerStartScore
+GR005,score,villainStartScore,-1,-1,负一阵营初始分,GameManager.villainStartScore
+GR006,turn,allowRepeatTarget,false,false,同一局内是否允许重复接触同一目标,GameManager.InitiateContact
+GR007,turn,maxContactPerRound,1,1,每名玩家每回合最多参与接触次数,lockedThisRound/inContactThisRound
+GR008,turn,allowSelfContact,false,false,是否允许接触自己,GameManager.InitiateContact
+GR009,turn,consecutiveNoContactLimit,true,true,是否限制连续放弃或拒绝,CanPlayerSkip/CanPlayerReject
+GR010,guessing,soloGuessBonus,1,1,只有一名玩家参与猜分时的奖励,GameManager.FinalizeGuesses
+GR011,guessing,bestGuessBonus,1,1,猜对数量最高者奖励,GameManager.FinalizeGuesses
+GR012,guessing,worstGuessPenalty,-1,-1,猜对数量最低者惩罚,GameManager.FinalizeGuesses
+

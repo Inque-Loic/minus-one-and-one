@@ -1,0 +1,17 @@
+﻿id,category,field,current_value,recommended_demo_value,description,source
+AI001,timing,aiActionDelay,1.2,0.8,正常模式 AI 行动等待秒数,UIManager.aiActionDelay
+AI002,timing,testAiActionDelay,0.3,0.01,测试模式 AI 行动等待秒数,UIManager.testAiActionDelay
+AI003,selection,randomSkipProbability,0.15,0.10,非强制行动时 AI 放弃概率,UIManager.AISelectTarget
+AI004,response,rejectProbabilityMin,0.05,0.05,怀疑度为 0 时拒绝概率,GameManager.AIDecideAccept
+AI005,response,rejectProbabilityMax,0.70,0.65,怀疑度为 1 时拒绝概率,GameManager.AIDecideAccept
+AI006,suspicion,initialSuspicion,0.5,0.5,默认怀疑度,GameManager.InitSuspicion
+AI007,suspicion,villainAllySuspicion,0.0,0.0,负一对同伴的初始怀疑度,GameManager.InitSuspicion
+AI008,suspicion,myScoreLossDelta,0.2,0.20,自己因接触扣分时提高对方怀疑度,UpdateSuspicionFromContact
+AI009,suspicion,myScoreGainDelta,-0.15,-0.12,自己因接触加分时降低对方怀疑度,UpdateSuspicionFromContact
+AI010,discussion,accuseTargetSuspicionDelta,0.08,0.06,听到指控后提高目标怀疑度,UpdateSuspicionFromMessage
+AI011,discussion,defendTargetSuspicionDelta,-0.06,-0.05,听到辩护后降低目标怀疑度,UpdateSuspicionFromMessage
+AI012,discussion,positiveScoreClaimDelta,-0.05,-0.03,听到正向分数声明后降低发言人怀疑度,UpdateSuspicionFromMessage
+AI013,discussion,negativeScoreClaimDelta,0.05,0.04,听到负向分数声明后提高发言人怀疑度,UpdateSuspicionFromMessage
+AI014,guessing,guessVarianceThreshold,0.05,0.04,怀疑度方差超过阈值时 AI 参与猜分,AIShouldGuess
+AI015,guessing,villainScoreGuessSuspicionThreshold,0.6,0.6,怀疑度高于阈值时按负一起始分猜测,AIGuessScores
+

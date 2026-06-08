@@ -1,0 +1,7 @@
+﻿phase_id,phase_name,entry_condition,main_action,next_phase,ui_panel,notes
+PH001,Selecting,round_start_or_next_actor_exists,actor_selects_target_or_skips,Responding_or_Discussion_or_ScoreGuessing,GamePanel,If no available actor remains then enter discussion or final guessing.
+PH002,Responding,contact_created,target_accepts_or_rejects,Selecting_or_Discussion_or_ScoreGuessing,ResponsePanel,Human and AI targets share the same settlement flow.
+PH003,Discussion,round_finished_before_max_rounds,each_player_submits_one_message,RoundEnd,DiscussionPanel,Current prototype calls StartNewRound soon after FinishDiscussion.
+PH004,RoundEnd,discussion_finished,show_round_result_and_confirm_next_round,Selecting,RoundEndPanel,This phase can be merged or turned into a clearer recap node for Demo.
+PH005,ScoreGuessing,max_round_reached,players_guess_all_scores,GameOver,ScoreGuessingPanel,Players may skip; participants are rewarded or punished by correct count.
+PH006,GameOver,guessing_finished_or_no_guessers,show_final_scores_roles_and_recap,None,EndGamePanel,Demo should expand this into an explainable result screen.
