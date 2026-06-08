@@ -53,9 +53,13 @@ public static class MinusOneAndOneBuild
     public static void BuildWindows()
     {
         ConfigureWindowsPlayer();
+        OpenSourceFontMigration.PrepareOpenSourceFontsForBuild();
 
         string absoluteBuildPath = Path.GetFullPath(BuildPath);
-        Directory.CreateDirectory(Path.GetDirectoryName(absoluteBuildPath) ?? throw new InvalidOperationException("Invalid build path."));
+        string buildDirectory = Path.GetDirectoryName(absoluteBuildPath) ?? throw new InvalidOperationException("Invalid build path.");
+        if (Directory.Exists(buildDirectory))
+            Directory.Delete(buildDirectory, true);
+        Directory.CreateDirectory(buildDirectory);
 
         BuildPlayerOptions options = new BuildPlayerOptions
         {

@@ -9,8 +9,11 @@ using Object = UnityEngine.Object;
 
 public static class OpenSourceFontMigration
 {
+    const string OldChineseFontGuid = "8f366153fe50f01409f6c457b925f1c5";
+    const string NotoFontGuid = "a32f25de5dda97b48a15f0e410402f26";
     const string SourceFontPath = "Assets/Fonts/OpenSource/NotoSansCJKsc-Regular.otf";
     const string FontAssetPath = "Assets/Fonts/OpenSource/NotoSansCJKsc-Dynamic.asset";
+    const string ScenePath = "Assets/Scenes/SampleScene.unity";
 
     [MenuItem("Tools/Minus One And One/Create And Apply Noto Font")]
     public static void CreateAndApplyNotoFont()
@@ -50,8 +53,15 @@ public static class OpenSourceFontMigration
             EditorSceneManager.MarkSceneDirty(manager.gameObject.scene);
         }
 
+        ReplaceOldFontGuidInScene();
         AssetDatabase.SaveAssets();
         Debug.Log("Noto Sans CJK SC dynamic font has been created and applied.");
+    }
+
+    public static void PrepareOpenSourceFontsForBuild()
+    {
+        CreateAndApplyNotoFont();
+        ReplaceOldFontGuidInScene();
     }
 
     [MenuItem("Tools/Minus One And One/Clear TMP Material Overrides")]
@@ -261,6 +271,18 @@ public static class OpenSourceFontMigration
         if (globalFontAsset != null)
             globalFontAsset.objectReferenceValue = fontAsset;
         serialized.ApplyModifiedPropertiesWithoutUndo();
+    }
+
+    static void ReplaceOldFontGuidInScene()
+    {
+        if (!File.Exists(ScenePath)) return;
+
+        string sceneText = File.ReadAllText(ScenePath);
+        string updated = sceneText.Replace(OldChineseFontGuid, NotoFontGuid);
+        if (updated == sceneText) return;
+
+        File.WriteAllText(ScenePath, updated);
+        AssetDatabase.ImportAsset(ScenePath);
     }
 
     static void RemoveSceneMaterialOverrides()
