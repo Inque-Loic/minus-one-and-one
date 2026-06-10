@@ -78,6 +78,27 @@ public class UIManager : MonoBehaviour
     [Header("字体")]
     public TMP_FontAsset chineseFont;
 
+    [Header("Kenney UI 资源")]
+    public Sprite uiButtonBlue;
+    public Sprite uiButtonGreen;
+    public Sprite uiButtonGrey;
+    public Sprite uiButtonRed;
+    public Sprite uiButtonYellow;
+    public Sprite iconCheckmark;
+    public Sprite iconCross;
+    public Sprite iconInformation;
+    public Sprite iconQuestion;
+    public Sprite iconTarget;
+    public Sprite iconTrophy;
+    public Sprite iconReturn;
+    public Sprite iconWarning;
+    public Sprite chipGreen;
+    public Sprite chipBlue;
+    public Sprite chipRed;
+    public Sprite cardBackGreen;
+    public Sprite cardBackRed;
+    public Sprite[] playerPieces;
+
     private List<Button> playerButtons = new List<Button>();
     private bool isBatchRunning = false;
     private int batchRemaining = 0;
@@ -103,6 +124,15 @@ public class UIManager : MonoBehaviour
     private Image quickGuideCardImage;
     private Button quickGuideContinueButton;
     private Button quickGuideBackButton;
+
+    enum ButtonSkin
+    {
+        Grey,
+        Blue,
+        Green,
+        Red,
+        Yellow
+    }
 
     void Awake()
     {
@@ -155,6 +185,63 @@ public class UIManager : MonoBehaviour
         manager.ApplyChineseFontToPrefab("Assets/Prefabs/GuessingInputRow.prefab");
         UnityEditor.EditorUtility.SetDirty(manager);
         UnityEditor.SceneManagement.EditorSceneManager.MarkSceneDirty(manager.gameObject.scene);
+    }
+
+    [UnityEditor.MenuItem("Tools/负一和一/Bind Kenney UI Art")]
+    static void BindKenneyUiArtMenu()
+    {
+        UIManager manager = FindFirstObjectByType<UIManager>();
+        if (manager == null) return;
+        manager.BindKenneyUiArt();
+        manager.ConfigureMainMenuLayout();
+        UnityEditor.EditorUtility.SetDirty(manager);
+        UnityEditor.SceneManagement.EditorSceneManager.MarkSceneDirty(manager.gameObject.scene);
+    }
+
+    void BindKenneyUiArt()
+    {
+        uiButtonBlue = LoadSprite("Assets/Art/Kenney/UI/PNG/Blue/Double/button_rectangle_depth_flat.png");
+        uiButtonGreen = LoadSprite("Assets/Art/Kenney/UI/PNG/Green/Double/button_rectangle_depth_flat.png");
+        uiButtonGrey = LoadSprite("Assets/Art/Kenney/UI/PNG/Grey/Double/button_rectangle_depth_flat.png");
+        uiButtonRed = LoadSprite("Assets/Art/Kenney/UI/PNG/Red/Double/button_rectangle_depth_flat.png");
+        uiButtonYellow = LoadSprite("Assets/Art/Kenney/UI/PNG/Yellow/Double/button_rectangle_depth_flat.png");
+        iconCheckmark = LoadSprite("Assets/Art/Kenney/Icons/PNG/White/2x/checkmark.png");
+        iconCross = LoadSprite("Assets/Art/Kenney/Icons/PNG/White/2x/cross.png");
+        iconInformation = LoadSprite("Assets/Art/Kenney/Icons/PNG/White/2x/information.png");
+        iconQuestion = LoadSprite("Assets/Art/Kenney/Icons/PNG/White/2x/question.png");
+        iconTarget = LoadSprite("Assets/Art/Kenney/Icons/PNG/White/2x/target.png");
+        iconTrophy = LoadSprite("Assets/Art/Kenney/Icons/PNG/White/2x/trophy.png");
+        iconReturn = LoadSprite("Assets/Art/Kenney/Icons/PNG/White/2x/return.png");
+        iconWarning = LoadSprite("Assets/Art/Kenney/Icons/PNG/White/2x/warning.png");
+        chipGreen = LoadSprite("Assets/Art/Kenney/BoardGame/PNG/Chips/chipGreen.png");
+        chipBlue = LoadSprite("Assets/Art/Kenney/BoardGame/PNG/Chips/chipBlue.png");
+        chipRed = LoadSprite("Assets/Art/Kenney/BoardGame/PNG/Chips/chipRedWhite.png");
+        cardBackGreen = LoadSprite("Assets/Art/Kenney/BoardGame/PNG/Cards/cardBack_green2.png");
+        cardBackRed = LoadSprite("Assets/Art/Kenney/BoardGame/PNG/Cards/cardBack_red2.png");
+        playerPieces = new[]
+        {
+            LoadSprite("Assets/Art/Kenney/BoardGame/PNG/Pieces (Green)/pieceGreen_single00.png"),
+            LoadSprite("Assets/Art/Kenney/BoardGame/PNG/Pieces (Blue)/pieceBlue_single00.png"),
+            LoadSprite("Assets/Art/Kenney/BoardGame/PNG/Pieces (Yellow)/pieceYellow_single00.png"),
+            LoadSprite("Assets/Art/Kenney/BoardGame/PNG/Pieces (Red)/pieceRed_single00.png"),
+            LoadSprite("Assets/Art/Kenney/BoardGame/PNG/Pieces (Purple)/piecePurple_single00.png"),
+            LoadSprite("Assets/Art/Kenney/BoardGame/PNG/Pieces (White)/pieceWhite_single00.png"),
+            LoadSprite("Assets/Art/Kenney/BoardGame/PNG/Pieces (Black)/pieceBlack_single00.png")
+        };
+    }
+
+    static Sprite LoadSprite(string path)
+    {
+        Sprite sprite = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>(path);
+        if (sprite != null)
+            return sprite;
+
+        UnityEngine.Object[] assets = UnityEditor.AssetDatabase.LoadAllAssetsAtPath(path);
+        foreach (UnityEngine.Object asset in assets)
+            if (asset is Sprite subSprite)
+                return subSprite;
+
+        return null;
     }
 #endif
 
@@ -307,6 +394,9 @@ public class UIManager : MonoBehaviour
             ApplyChineseFont(title);
         }
 
+        EnsureDecorImage(quickGuidePanel.transform, "QuickGuideInfoIcon", iconInformation, new Vector2(-250f, 198f), new Vector2(42f, 42f), new Color(1f, 1f, 1f, 0.9f));
+        EnsureDecorImage(quickGuidePanel.transform, "QuickGuideChipIcon", chipBlue, new Vector2(252f, 196f), new Vector2(54f, 54f), new Color(1f, 1f, 1f, 0.9f));
+
         TextMeshProUGUI body = FindChildRecursive(quickGuidePanel.transform, "QuickGuideBody")?.GetComponent<TextMeshProUGUI>();
         if (body != null)
         {
@@ -325,11 +415,11 @@ public class UIManager : MonoBehaviour
             ApplyChineseFont(body);
         }
 
-        ConfigureGuideButton(quickGuideBackButton, "返回主菜单", new Vector2(-150f, -210f), new Color(0.18f, 0.227f, 0.322f, 1f), ReturnToMainMenu);
-        ConfigureGuideButton(quickGuideContinueButton, "我知道了", new Vector2(150f, -210f), new Color(0.16f, 0.36f, 0.25f, 1f), ContinueFromQuickGuide);
+        ConfigureGuideButton(quickGuideBackButton, "返回主菜单", new Vector2(-150f, -210f), new Color(0.18f, 0.227f, 0.322f, 1f), ReturnToMainMenu, ButtonSkin.Grey, iconReturn);
+        ConfigureGuideButton(quickGuideContinueButton, "我知道了", new Vector2(150f, -210f), new Color(0.16f, 0.36f, 0.25f, 1f), ContinueFromQuickGuide, ButtonSkin.Green, iconCheckmark);
     }
 
-    void ConfigureGuideButton(Button button, string label, Vector2 position, Color color, UnityEngine.Events.UnityAction onClick)
+    void ConfigureGuideButton(Button button, string label, Vector2 position, Color color, UnityEngine.Events.UnityAction onClick, ButtonSkin skin, Sprite icon)
     {
         if (button == null) return;
 
@@ -337,16 +427,13 @@ public class UIManager : MonoBehaviour
         if (rect != null)
             SetRect(rect, position, new Vector2(240f, 60f));
 
-        Image image = button.GetComponent<Image>();
-        if (image != null)
-        {
-            image.color = color;
-            image.raycastTarget = true;
-        }
+        ApplyButtonArt(button, skin, color);
 
         button.interactable = true;
         button.onClick.RemoveAllListeners();
         button.onClick.AddListener(onClick);
+
+        EnsureDecorImage(button.transform, "Icon", icon, new Vector2(-82f, 0f), new Vector2(26f, 26f), Color.white);
 
         TextMeshProUGUI text = button.GetComponentInChildren<TextMeshProUGUI>(true);
         if (text != null)
@@ -445,6 +532,11 @@ public class UIManager : MonoBehaviour
             cardRect.pivot = new Vector2(0.5f, 0.5f);
             cardRect.anchoredPosition = new Vector2(0f, 12f);
             cardRect.sizeDelta = new Vector2(620f, 560f);
+
+            Sprite cardSprite = isVillain ? cardBackRed : cardBackGreen;
+            Sprite roleSprite = isVillain ? GetPlayerPieceSprite(3) : GetPlayerPieceSprite(0);
+            EnsureDecorImage(cardRect, "IdentityCardBackDecor", cardSprite, new Vector2(218f, 130f), new Vector2(116f, 164f), new Color(1f, 1f, 1f, 0.22f), false);
+            EnsureDecorImage(cardRect, "IdentityPieceIcon", roleSprite, new Vector2(-238f, 180f), new Vector2(72f, 72f), new Color(1f, 1f, 1f, 0.95f), false);
         }
 
         if (textRect != null)
@@ -474,10 +566,22 @@ public class UIManager : MonoBehaviour
             buttonRect.sizeDelta = new Vector2(260f, 64f);
 
             Image buttonImage = buttonRect.GetComponent<Image>();
-            if (buttonImage != null)
+            Button button = buttonRect.GetComponent<Button>();
+            if (button != null)
+            {
+                ApplyButtonArt(
+                    button,
+                    isVillain ? ButtonSkin.Red : ButtonSkin.Green,
+                    isVillain ? new Color(0.46f, 0.20f, 0.16f, 1f) : new Color(0.16f, 0.36f, 0.25f, 1f));
+            }
+            else if (buttonImage != null)
+            {
                 buttonImage.color = isVillain
                     ? new Color(0.46f, 0.20f, 0.16f, 1f)
                     : new Color(0.16f, 0.36f, 0.25f, 1f);
+            }
+
+            EnsureDecorImage(buttonRect, "Icon", iconCheckmark, new Vector2(-102f, 0f), new Vector2(26f, 26f), Color.white);
 
             TextMeshProUGUI buttonText = buttonRect.GetComponentInChildren<TextMeshProUGUI>();
             if (buttonText != null)
@@ -503,8 +607,8 @@ public class UIManager : MonoBehaviour
             }
 
             Image backImage = backButton.GetComponent<Image>();
-            if (backImage != null)
-                backImage.color = new Color(0.18f, 0.227f, 0.322f, 1f);
+            ApplyButtonArt(backButton, ButtonSkin.Grey, new Color(0.18f, 0.227f, 0.322f, 1f));
+            EnsureDecorImage(backButton.transform, "Icon", iconReturn, new Vector2(-82f, 0f), new Vector2(24f, 24f), Color.white);
 
             TextMeshProUGUI backText = backButton.GetComponentInChildren<TextMeshProUGUI>();
             if (backText != null)
@@ -937,6 +1041,89 @@ public class UIManager : MonoBehaviour
         rect.sizeDelta = size;
     }
 
+    Sprite GetButtonSprite(ButtonSkin skin)
+    {
+        switch (skin)
+        {
+            case ButtonSkin.Blue: return uiButtonBlue != null ? uiButtonBlue : uiButtonGrey;
+            case ButtonSkin.Green: return uiButtonGreen != null ? uiButtonGreen : uiButtonGrey;
+            case ButtonSkin.Red: return uiButtonRed != null ? uiButtonRed : uiButtonGrey;
+            case ButtonSkin.Yellow: return uiButtonYellow != null ? uiButtonYellow : uiButtonGrey;
+            default: return uiButtonGrey;
+        }
+    }
+
+    void ApplyButtonArt(Button button, ButtonSkin skin, Color fallbackColor)
+    {
+        if (button == null) return;
+        Image image = button.GetComponent<Image>();
+        if (image == null) return;
+
+        Sprite sprite = GetButtonSprite(skin);
+        if (sprite != null)
+        {
+            image.sprite = sprite;
+            image.type = Image.Type.Sliced;
+            image.pixelsPerUnitMultiplier = 1f;
+            image.color = skin == ButtonSkin.Grey ? fallbackColor : Color.white;
+        }
+        else
+        {
+            image.sprite = null;
+            image.type = Image.Type.Simple;
+            image.color = fallbackColor;
+        }
+        image.raycastTarget = true;
+    }
+
+    Image EnsureDecorImage(Transform parent, string objectName, Sprite sprite, Vector2 position, Vector2 size, Color color, bool setLastSibling = true)
+    {
+        if (parent == null || sprite == null) return null;
+
+        Transform existing = parent.Find(objectName);
+        GameObject obj;
+        if (existing == null)
+        {
+            obj = new GameObject(objectName, typeof(RectTransform), typeof(Image));
+            obj.transform.SetParent(parent, false);
+        }
+        else
+        {
+            obj = existing.gameObject;
+        }
+
+        RectTransform rect = obj.transform as RectTransform;
+        if (rect != null)
+            SetRect(rect, position, size);
+
+        Image image = obj.GetComponent<Image>();
+        image.sprite = sprite;
+        image.type = Image.Type.Simple;
+        image.preserveAspect = true;
+        image.color = color;
+        image.raycastTarget = false;
+
+        if (setLastSibling)
+            obj.transform.SetAsLastSibling();
+        else
+            obj.transform.SetAsFirstSibling();
+
+        return image;
+    }
+
+    Sprite GetPlayerPieceSprite(int playerIndex)
+    {
+        if (playerPieces == null || playerPieces.Length == 0) return null;
+        return playerPieces[Mathf.Abs(playerIndex) % playerPieces.Length];
+    }
+
+    Sprite GetDiscussionIcon(DiscussionMessageType type)
+    {
+        if (type == DiscussionMessageType.Accuse) return iconTarget != null ? iconTarget : iconWarning;
+        if (type == DiscussionMessageType.Defend) return iconCheckmark;
+        return chipBlue != null ? chipBlue : iconInformation;
+    }
+
     void ConfigureMainMenuLayout()
     {
         if (mainMenuPanel == null) return;
@@ -970,14 +1157,17 @@ public class UIManager : MonoBehaviour
             cardRect.SetAsFirstSibling();
         }
 
+        EnsureDecorImage(mainMenuPanel.transform, "MenuCardDecorLeft", cardBackGreen, new Vector2(-242f, 158f), new Vector2(92f, 132f), new Color(1f, 1f, 1f, 0.24f), false);
+        EnsureDecorImage(mainMenuPanel.transform, "MenuCardDecorRight", cardBackRed, new Vector2(242f, -158f), new Vector2(92f, 132f), new Color(1f, 1f, 1f, 0.22f), false);
+
         ConfigureMainMenuText("MainMenuTitle", "负一和一", new Vector2(0f, 150f), new Vector2(520f, 70f), 44f, new Color(0.965f, 0.82f, 0.32f, 1f));
         ConfigureMainMenuText("MainMenuSubtitle", "在接触、声明与猜分之间识破负一", new Vector2(0f, 96f), new Vector2(520f, 40f), 21f, new Color(0.82f, 0.86f, 0.92f, 1f));
 
         Transform startButton = FindChildRecursive(mainMenuPanel.transform, "StartButton");
         Transform testButton = FindChildRecursive(mainMenuPanel.transform, "GameTest");
 
-        ConfigureMainMenuButton(startButton, "开始游戏", new Vector2(0f, 12f), new Color(0.16f, 0.36f, 0.25f, 1f));
-        ConfigureMainMenuButton(testButton, "游戏测试", new Vector2(0f, -92f), new Color(0.165f, 0.333f, 0.502f, 1f));
+        ConfigureMainMenuButton(startButton, "开始游戏", new Vector2(0f, 12f), new Color(0.16f, 0.36f, 0.25f, 1f), ButtonSkin.Green, iconCheckmark);
+        ConfigureMainMenuButton(testButton, "游戏测试", new Vector2(0f, -92f), new Color(0.165f, 0.333f, 0.502f, 1f), ButtonSkin.Blue, iconInformation);
     }
 
     void ConfigureMainMenuText(string objectName, string content, Vector2 position, Vector2 size, float fontSize, Color color)
@@ -1056,23 +1246,17 @@ public class UIManager : MonoBehaviour
         return card.GetComponent<RectTransform>();
     }
 
-    void ConfigureMainMenuButton(Transform buttonTransform, string label, Vector2 position, Color color)
+    void ConfigureMainMenuButton(Transform buttonTransform, string label, Vector2 position, Color color, ButtonSkin skin, Sprite icon)
     {
         if (buttonTransform == null) return;
 
         SetRect(buttonTransform, position, new Vector2(360f, 68f));
         buttonTransform.SetAsLastSibling();
 
-        Image image = buttonTransform.GetComponent<Image>();
-        if (image != null)
-        {
-            image.color = color;
-            image.raycastTarget = true;
-        }
-
         Button button = buttonTransform.GetComponent<Button>();
         if (button != null)
         {
+            ApplyButtonArt(button, skin, color);
             button.interactable = true;
             ColorBlock colors = button.colors;
             colors.normalColor = Color.white;
@@ -1083,6 +1267,8 @@ public class UIManager : MonoBehaviour
             colors.fadeDuration = 0.06f;
             button.colors = colors;
         }
+
+        EnsureDecorImage(buttonTransform, "Icon", icon, new Vector2(-120f, 0f), new Vector2(30f, 30f), Color.white);
 
         TextMeshProUGUI text = buttonTransform.GetComponentInChildren<TextMeshProUGUI>(true);
         if (text != null)
@@ -1264,6 +1450,10 @@ public class UIManager : MonoBehaviour
             skipImage.color = skipButton.interactable
                 ? new Color(0.353f, 0.290f, 0.165f, 1f)
                 : new Color(0.165f, 0.165f, 0.208f, 1f);
+        ApplyButtonArt(skipButton, ButtonSkin.Yellow, new Color(0.353f, 0.290f, 0.165f, 1f));
+        if (!skipButton.interactable && skipImage != null)
+            skipImage.color = new Color(0.55f, 0.55f, 0.58f, 1f);
+        EnsureDecorImage(skipButton.transform, "Icon", iconWarning, new Vector2(-126f, 0f), new Vector2(24f, 24f), Color.white);
 
         ColorBlock colors = skipButton.colors;
         colors.normalColor = Color.white;
@@ -1294,6 +1484,12 @@ public class UIManager : MonoBehaviour
         Image img = btnObj.GetComponent<Image>();
         if (img != null)
         {
+            if (uiButtonGrey != null)
+            {
+                img.sprite = uiButtonGrey;
+                img.type = Image.Type.Sliced;
+            }
+
             if (playerIndex == GameManager.Instance.humanPlayerIndex)
                 img.color = new Color(0.16f, 0.36f, 0.25f, 1f);
             else if (isSelf)
@@ -1329,6 +1525,13 @@ public class UIManager : MonoBehaviour
             btnText.textWrappingMode = TextWrappingModes.Normal;
             btnText.overflowMode = TextOverflowModes.Ellipsis;
         }
+
+        Sprite piece = GetPlayerPieceSprite(playerIndex);
+        Color pieceColor = canClick ? Color.white : new Color(1f, 1f, 1f, 0.48f);
+        EnsureDecorImage(btnObj.transform, "PlayerPieceIcon", piece, new Vector2(-340f, 0f), new Vector2(38f, 38f), pieceColor);
+
+        Sprite chip = playerIndex == GameManager.Instance.humanPlayerIndex ? chipGreen : chipBlue;
+        EnsureDecorImage(btnObj.transform, "ScoreChipIcon", chip, new Vector2(322f, 0f), new Vector2(32f, 32f), new Color(1f, 1f, 1f, canClick ? 0.9f : 0.42f));
     }
 
     void ConfigureDiscussionLayout()
@@ -1580,9 +1783,9 @@ public class UIManager : MonoBehaviour
         if (inputImage != null)
             inputImage.raycastTarget = false;
 
-        StyleDiscussionButton(btnAnnounceScore, "公开分数变化", new Vector2(-190f, 24f), 176f, new Color(0.16f, 0.36f, 0.25f, 1f));
-        StyleDiscussionButton(btnAccuse, "指控玩家", new Vector2(0f, 24f), 176f, new Color(0.46f, 0.20f, 0.16f, 1f));
-        StyleDiscussionButton(btnDefend, "信任玩家", new Vector2(190f, 24f), 176f, new Color(0.165f, 0.333f, 0.502f, 1f));
+        StyleDiscussionButton(btnAnnounceScore, "公开分数变化", new Vector2(-190f, 24f), 176f, new Color(0.16f, 0.36f, 0.25f, 1f), ButtonSkin.Blue, chipBlue);
+        StyleDiscussionButton(btnAccuse, "指控玩家", new Vector2(0f, 24f), 176f, new Color(0.46f, 0.20f, 0.16f, 1f), ButtonSkin.Red, iconTarget);
+        StyleDiscussionButton(btnDefend, "信任玩家", new Vector2(190f, 24f), 176f, new Color(0.165f, 0.333f, 0.502f, 1f), ButtonSkin.Green, iconCheckmark);
         BindDiscussionInputButtons();
 
         if (accuseTargetContainer != null)
@@ -1595,7 +1798,7 @@ public class UIManager : MonoBehaviour
 
     void ConfigureDiscussionEndButton()
     {
-        StyleDiscussionButton(btnEndDiscussion, "下一回合", new Vector2(0f, -250f), 260f, new Color(0.16f, 0.36f, 0.25f, 1f));
+        StyleDiscussionButton(btnEndDiscussion, "下一回合", new Vector2(0f, -250f), 260f, new Color(0.16f, 0.36f, 0.25f, 1f), ButtonSkin.Green, iconCheckmark);
         BindDiscussionEndButton();
         if (btnEndDiscussion != null)
             btnEndDiscussion.gameObject.SetActive(CanShowDiscussionEndButton());
@@ -1653,7 +1856,7 @@ public class UIManager : MonoBehaviour
         btnEndDiscussion.interactable = CanShowDiscussionEndButton();
     }
 
-    void StyleDiscussionButton(Button button, string label, Vector2 position, float width, Color color)
+    void StyleDiscussionButton(Button button, string label, Vector2 position, float width, Color color, ButtonSkin skin, Sprite icon)
     {
         if (button == null) return;
 
@@ -1663,9 +1866,7 @@ public class UIManager : MonoBehaviour
         if (rect != null)
             SetRect(rect, position, new Vector2(width, 52f));
 
-        Image image = button.GetComponent<Image>();
-        if (image != null)
-            image.color = color;
+        ApplyButtonArt(button, skin, color);
 
         ColorBlock colors = button.colors;
         colors.normalColor = Color.white;
@@ -1687,6 +1888,8 @@ public class UIManager : MonoBehaviour
             text.raycastTarget = false;
             text.overflowMode = TextOverflowModes.Truncate;
         }
+
+        EnsureDecorImage(button.transform, "Icon", icon, new Vector2(-width * 0.5f + 25f, 0f), new Vector2(22f, 22f), Color.white);
     }
 
     void StyleDynamicDiscussionButton(GameObject btnObj, string label)
@@ -1704,6 +1907,11 @@ public class UIManager : MonoBehaviour
         Image image = btnObj.GetComponent<Image>();
         if (image != null)
         {
+            if (uiButtonGrey != null)
+            {
+                image.sprite = uiButtonGrey;
+                image.type = Image.Type.Sliced;
+            }
             image.color = new Color(0.18f, 0.227f, 0.322f, 1f);
             image.raycastTarget = true;
         }
@@ -1961,6 +2169,7 @@ public class UIManager : MonoBehaviour
         bool canReject = GameManager.Instance.CanPlayerReject(targetIndex);
 
         SetResponsePanelActive(true);
+        ConfigureResponsePanelLayout(canReject);
 
         if (responseText != null)
         {
@@ -1972,6 +2181,48 @@ public class UIManager : MonoBehaviour
 
         if (rejectButton != null)
             rejectButton.interactable = canReject;
+    }
+
+    void ConfigureResponsePanelLayout(bool canReject)
+    {
+        if (responsePanel == null) return;
+
+        Image panelImage = responsePanel.GetComponent<Image>();
+        if (panelImage != null)
+        {
+            panelImage.color = new Color(0.102f, 0.129f, 0.184f, 0.98f);
+            panelImage.raycastTarget = true;
+        }
+
+        if (responseText != null)
+        {
+            ApplyChineseFont(responseText);
+            responseText.fontSize = 25f;
+            responseText.color = new Color(0.92f, 0.94f, 0.98f, 1f);
+            responseText.alignment = TextAlignmentOptions.Center;
+            responseText.textWrappingMode = TextWrappingModes.Normal;
+        }
+
+        StyleResponseButton(acceptButton, "接受", ButtonSkin.Green, iconCheckmark);
+        StyleResponseButton(rejectButton, canReject ? "拒绝" : "必须接受", canReject ? ButtonSkin.Red : ButtonSkin.Grey, canReject ? iconCross : iconWarning);
+    }
+
+    void StyleResponseButton(Button button, string label, ButtonSkin skin, Sprite icon)
+    {
+        if (button == null) return;
+        ApplyButtonArt(button, skin, skin == ButtonSkin.Red ? new Color(0.46f, 0.20f, 0.16f, 1f) : new Color(0.16f, 0.36f, 0.25f, 1f));
+        EnsureDecorImage(button.transform, "Icon", icon, new Vector2(-58f, 0f), new Vector2(24f, 24f), Color.white);
+
+        TextMeshProUGUI text = button.GetComponentInChildren<TextMeshProUGUI>(true);
+        if (text != null)
+        {
+            ApplyChineseFont(text);
+            text.text = label;
+            text.fontSize = 22f;
+            text.color = Color.white;
+            text.alignment = TextAlignmentOptions.Center;
+            text.raycastTarget = false;
+        }
     }
 
     public void OnAccept()
@@ -2314,6 +2565,9 @@ public class UIManager : MonoBehaviour
     {
         if (discussionMessageContainer == null || discussionMessagePrefab == null) return;
         GameObject item = Instantiate(discussionMessagePrefab, discussionMessageContainer);
+        Sprite icon = ResolveDiscussionIconFromText(text);
+        EnsureDecorImage(item.transform, "MessageTypeIcon", icon, new Vector2(-238f, 0f), new Vector2(24f, 24f), new Color(1f, 1f, 1f, 0.86f));
+
         var tmp = item.GetComponentInChildren<TextMeshProUGUI>();
         if (tmp != null)
         {
@@ -2324,11 +2578,23 @@ public class UIManager : MonoBehaviour
             tmp.alignment = TextAlignmentOptions.Left;
             tmp.textWrappingMode = TextWrappingModes.Normal;
             tmp.overflowMode = TextOverflowModes.Truncate;
+            RectTransform tmpRect = tmp.rectTransform;
+            tmpRect.anchorMin = new Vector2(0f, 0f);
+            tmpRect.anchorMax = new Vector2(1f, 1f);
+            tmpRect.offsetMin = new Vector2(48f, 4f);
+            tmpRect.offsetMax = new Vector2(-8f, -4f);
         }
 
         Image itemImage = item.GetComponent<Image>();
         if (itemImage != null)
+        {
+            if (uiButtonGrey != null)
+            {
+                itemImage.sprite = uiButtonGrey;
+                itemImage.type = Image.Type.Sliced;
+            }
             itemImage.color = new Color(0.14f, 0.18f, 0.25f, 1f);
+        }
 
         LayoutElement layoutElement = item.GetComponent<LayoutElement>();
         if (layoutElement == null)
@@ -2339,6 +2605,14 @@ public class UIManager : MonoBehaviour
         Canvas.ForceUpdateCanvases();
         var scrollRect = discussionMessageContainer.GetComponentInParent<UnityEngine.UI.ScrollRect>();
         if (scrollRect != null) scrollRect.verticalNormalizedPosition = 0f;
+    }
+
+    Sprite ResolveDiscussionIconFromText(string text)
+    {
+        if (text.Contains("指控")) return iconTarget != null ? iconTarget : iconWarning;
+        if (text.Contains("认为") || text.Contains("好人")) return iconCheckmark;
+        if (text.Contains("分数")) return chipBlue != null ? chipBlue : iconInformation;
+        return iconInformation;
     }
 
     void ClearDiscussionMessages()
@@ -2382,6 +2656,7 @@ public class UIManager : MonoBehaviour
     {
         if (scoreGuessingPanel != null) scoreGuessingPanel.SetActive(true);
         if (guessingResultText != null) guessingResultText.text = "";
+        ConfigureScoreGuessingLayout();
 
         var players = GameManager.Instance.GetPlayers();
 
@@ -2410,6 +2685,7 @@ public class UIManager : MonoBehaviour
 
         string result = GameManager.Instance.GetGuessingResultText();
         if (guessingResultText != null) guessingResultText.text = result;
+        ConfigureScoreGuessingLayout();
         yield return new WaitForSeconds(2f);
 
         if (scoreGuessingPanel != null) scoreGuessingPanel.SetActive(false);
@@ -2439,6 +2715,7 @@ public class UIManager : MonoBehaviour
                 if (labels.Length > 0) labels[0].text = players[i].playerName;
                 inputFields[i] = row.GetComponentInChildren<TMP_InputField>();
                 if (inputFields[i] != null) inputFields[i].text = "0";
+                StyleGuessingRow(row, i);
             }
         }
 
@@ -2474,6 +2751,67 @@ public class UIManager : MonoBehaviour
             }
             GameManager.Instance.SubmitGuess(guesserIndex, guesses);
         }
+    }
+
+    void ConfigureScoreGuessingLayout()
+    {
+        if (scoreGuessingPanel == null) return;
+
+        Image panelImage = scoreGuessingPanel.GetComponent<Image>();
+        if (panelImage != null)
+        {
+            panelImage.color = new Color(0.055f, 0.071f, 0.102f, 0.98f);
+            panelImage.raycastTarget = true;
+        }
+
+        if (guessingTitleText != null)
+        {
+            ApplyChineseFont(guessingTitleText);
+            guessingTitleText.fontSize = 32f;
+            guessingTitleText.color = new Color(0.965f, 0.82f, 0.32f, 1f);
+            guessingTitleText.alignment = TextAlignmentOptions.Center;
+            EnsureDecorImage(scoreGuessingPanel.transform, "GuessingChipIcon", chipBlue, new Vector2(-188f, 250f), new Vector2(42f, 42f), Color.white);
+            EnsureDecorImage(scoreGuessingPanel.transform, "GuessingQuestionIcon", iconQuestion, new Vector2(188f, 250f), new Vector2(34f, 34f), Color.white);
+        }
+
+        if (guessingPromptText != null)
+        {
+            ApplyChineseFont(guessingPromptText);
+            guessingPromptText.fontSize = 21f;
+            guessingPromptText.color = new Color(0.88f, 0.91f, 0.96f, 1f);
+            guessingPromptText.alignment = TextAlignmentOptions.Center;
+        }
+
+        StyleResponseButton(btnSubmitGuess, "提交猜分", ButtonSkin.Green, iconCheckmark);
+        StyleResponseButton(btnSkipGuess, "跳过", ButtonSkin.Grey, iconReturn);
+
+        if (guessingResultText != null)
+        {
+            ApplyChineseFont(guessingResultText);
+            guessingResultText.fontSize = 21f;
+            guessingResultText.color = new Color(0.92f, 0.94f, 0.98f, 1f);
+            guessingResultText.alignment = TextAlignmentOptions.TopLeft;
+            guessingResultText.textWrappingMode = TextWrappingModes.Normal;
+        }
+    }
+
+    void StyleGuessingRow(GameObject row, int playerIndex)
+    {
+        if (row == null) return;
+
+        Image rowImage = row.GetComponent<Image>();
+        if (rowImage != null)
+        {
+            if (uiButtonGrey != null)
+            {
+                rowImage.sprite = uiButtonGrey;
+                rowImage.type = Image.Type.Sliced;
+            }
+            rowImage.color = new Color(0.14f, 0.18f, 0.25f, 0.96f);
+        }
+
+        EnsureDecorImage(row.transform, "PlayerPieceIcon", GetPlayerPieceSprite(playerIndex), new Vector2(-150f, 0f), new Vector2(30f, 30f), Color.white);
+        EnsureDecorImage(row.transform, "ChipIcon", chipBlue, new Vector2(144f, 0f), new Vector2(26f, 26f), Color.white);
     }
 
     // ─── 分数猜测阶段（测试模式）─────────────────
@@ -2647,6 +2985,19 @@ public class UIManager : MonoBehaviour
 
     void ConfigureEndGameLayout()
     {
+        if (endGamePanel != null)
+        {
+            Image panelImage = endGamePanel.GetComponent<Image>();
+            if (panelImage != null)
+            {
+                panelImage.color = new Color(0.055f, 0.071f, 0.102f, 1f);
+                panelImage.raycastTarget = true;
+            }
+
+            EnsureDecorImage(endGamePanel.transform, "EndGameTrophyIcon", iconTrophy, new Vector2(-470f, 250f), new Vector2(54f, 54f), new Color(1f, 1f, 1f, 0.9f), false);
+            EnsureDecorImage(endGamePanel.transform, "EndGameChipIcon", chipGreen, new Vector2(470f, 248f), new Vector2(58f, 58f), new Color(1f, 1f, 1f, 0.82f), false);
+        }
+
         if (finalScoresText != null)
         {
             ApplyChineseFont(finalScoresText);
@@ -2675,6 +3026,22 @@ public class UIManager : MonoBehaviour
                 buttonRect.pivot = new Vector2(0.5f, 0.5f);
                 buttonRect.anchoredPosition = Vector2.zero;
                 buttonRect.sizeDelta = new Vector2(260f, 64f);
+            }
+
+            Button button = returnButton.GetComponent<Button>();
+            if (button != null)
+                ApplyButtonArt(button, ButtonSkin.Grey, new Color(0.18f, 0.227f, 0.322f, 1f));
+            EnsureDecorImage(returnButton, "Icon", iconReturn, new Vector2(-90f, 0f), new Vector2(26f, 26f), Color.white);
+
+            TextMeshProUGUI text = returnButton.GetComponentInChildren<TextMeshProUGUI>(true);
+            if (text != null)
+            {
+                ApplyChineseFont(text);
+                text.text = "返回主菜单";
+                text.fontSize = 24f;
+                text.color = Color.white;
+                text.alignment = TextAlignmentOptions.Center;
+                text.raycastTarget = false;
             }
         }
     }
