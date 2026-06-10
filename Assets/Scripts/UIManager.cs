@@ -535,8 +535,8 @@ public class UIManager : MonoBehaviour
 
             Sprite cardSprite = isVillain ? cardBackRed : cardBackGreen;
             Sprite roleSprite = isVillain ? GetPlayerPieceSprite(3) : GetPlayerPieceSprite(0);
-            EnsureDecorImage(cardRect, "IdentityCardBackDecor", cardSprite, new Vector2(218f, 130f), new Vector2(116f, 164f), new Color(1f, 1f, 1f, 0.22f), false);
-            EnsureDecorImage(cardRect, "IdentityPieceIcon", roleSprite, new Vector2(-238f, 180f), new Vector2(72f, 72f), new Color(1f, 1f, 1f, 0.95f), false);
+            EnsureDecorImage(cardRect, "IdentityCardBackDecor", cardSprite, new Vector2(214f, 126f), new Vector2(116f, 164f), new Color(1f, 1f, 1f, 0.24f), false);
+            EnsureDecorImage(cardRect, "IdentityPieceIcon", roleSprite, new Vector2(214f, 14f), new Vector2(64f, 64f), new Color(1f, 1f, 1f, 0.95f), false);
         }
 
         if (textRect != null)
@@ -553,8 +553,8 @@ public class UIManager : MonoBehaviour
             textRect.anchorMin = new Vector2(0.5f, 0.5f);
             textRect.anchorMax = new Vector2(0.5f, 0.5f);
             textRect.pivot = new Vector2(0.5f, 0.5f);
-            textRect.anchoredPosition = new Vector2(0f, 62f);
-            textRect.sizeDelta = new Vector2(540f, 400f);
+            textRect.anchoredPosition = new Vector2(-72f, 58f);
+            textRect.sizeDelta = new Vector2(404f, 392f);
         }
 
         if (buttonRect != null)
