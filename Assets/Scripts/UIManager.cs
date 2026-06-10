@@ -99,6 +99,10 @@ public class UIManager : MonoBehaviour
     private Image discussionMessagesCardImage;
     private RectTransform discussionChoiceContainer;
     private Image mainMenuCardImage;
+    private GameObject quickGuidePanel;
+    private Image quickGuideCardImage;
+    private Button quickGuideContinueButton;
+    private Button quickGuideBackButton;
 
     void Awake()
     {
@@ -163,7 +167,197 @@ public class UIManager : MonoBehaviour
         endGamePanel.SetActive(false);
         SetResponsePanelActive(false);
         SetRoundEndPanelActive(false);
+        ShowQuickGuidePanel();
+    }
+
+    void ShowQuickGuidePanel()
+    {
+        EnsureQuickGuidePanel();
+        if (quickGuidePanel == null)
+        {
+            ShowIdentityPanel();
+            return;
+        }
+
+        if (identityPanel != null) identityPanel.SetActive(false);
+        if (gamePanel != null) gamePanel.SetActive(false);
+        quickGuidePanel.SetActive(true);
+        ConfigureQuickGuideLayout();
+    }
+
+    void ContinueFromQuickGuide()
+    {
+        if (quickGuidePanel != null) quickGuidePanel.SetActive(false);
         ShowIdentityPanel();
+    }
+
+    void EnsureQuickGuidePanel()
+    {
+        if (quickGuidePanel != null) return;
+        if (mainMenuPanel == null) return;
+
+        Transform parent = mainMenuPanel.transform.parent;
+        if (parent == null) return;
+
+        Transform existing = parent.Find("QuickGuidePanel");
+        if (existing != null)
+        {
+            quickGuidePanel = existing.gameObject;
+            quickGuideContinueButton = FindChildRecursive(existing, "QuickGuideContinueButton")?.GetComponent<Button>();
+            quickGuideBackButton = FindChildRecursive(existing, "QuickGuideBackButton")?.GetComponent<Button>();
+            ApplyGuideLayer(quickGuidePanel);
+            return;
+        }
+
+        quickGuidePanel = new GameObject("QuickGuidePanel", typeof(RectTransform), typeof(Image));
+        quickGuidePanel.transform.SetParent(parent, false);
+        quickGuidePanel.SetActive(false);
+        ApplyGuideLayer(quickGuidePanel);
+
+        CreateGuideText("QuickGuideTitle");
+        CreateGuideText("QuickGuideBody");
+        quickGuideContinueButton = CreateGuideButton("QuickGuideContinueButton");
+        quickGuideBackButton = CreateGuideButton("QuickGuideBackButton");
+
+        GameObject card = new GameObject("QuickGuideCard", typeof(RectTransform), typeof(Image));
+        card.transform.SetParent(quickGuidePanel.transform, false);
+        ApplyGuideLayer(card);
+        quickGuideCardImage = card.GetComponent<Image>();
+        quickGuideCardImage.raycastTarget = false;
+    }
+
+    void ApplyGuideLayer(GameObject obj)
+    {
+        if (obj == null) return;
+        int layer = mainMenuPanel != null ? mainMenuPanel.layer : obj.layer;
+        obj.layer = layer;
+        foreach (Transform child in obj.transform)
+            ApplyGuideLayer(child.gameObject);
+    }
+
+    TextMeshProUGUI CreateGuideText(string objectName)
+    {
+        GameObject textObj = new GameObject(objectName, typeof(RectTransform), typeof(TextMeshProUGUI));
+        textObj.transform.SetParent(quickGuidePanel.transform, false);
+        ApplyGuideLayer(textObj);
+        TextMeshProUGUI text = textObj.GetComponent<TextMeshProUGUI>();
+        text.raycastTarget = false;
+        ApplyChineseFont(text);
+        return text;
+    }
+
+    Button CreateGuideButton(string objectName)
+    {
+        GameObject buttonObj = new GameObject(objectName, typeof(RectTransform), typeof(Image), typeof(Button));
+        buttonObj.transform.SetParent(quickGuidePanel.transform, false);
+        ApplyGuideLayer(buttonObj);
+
+        GameObject textObj = new GameObject("Text (TMP)", typeof(RectTransform), typeof(TextMeshProUGUI));
+        textObj.transform.SetParent(buttonObj.transform, false);
+        ApplyGuideLayer(textObj);
+
+        RectTransform textRect = textObj.GetComponent<RectTransform>();
+        textRect.anchorMin = Vector2.zero;
+        textRect.anchorMax = Vector2.one;
+        textRect.offsetMin = Vector2.zero;
+        textRect.offsetMax = Vector2.zero;
+
+        TextMeshProUGUI text = textObj.GetComponent<TextMeshProUGUI>();
+        text.raycastTarget = false;
+        ApplyChineseFont(text);
+
+        return buttonObj.GetComponent<Button>();
+    }
+
+    void ConfigureQuickGuideLayout()
+    {
+        if (quickGuidePanel == null) return;
+
+        RectTransform panelRect = quickGuidePanel.transform as RectTransform;
+        if (panelRect != null)
+        {
+            panelRect.anchorMin = Vector2.zero;
+            panelRect.anchorMax = Vector2.one;
+            panelRect.offsetMin = Vector2.zero;
+            panelRect.offsetMax = Vector2.zero;
+        }
+
+        Image panelImage = quickGuidePanel.GetComponent<Image>();
+        if (panelImage != null)
+            panelImage.color = new Color(0.055f, 0.071f, 0.102f, 1f);
+
+        RectTransform cardRect = FindChildRecursive(quickGuidePanel.transform, "QuickGuideCard") as RectTransform;
+        if (cardRect != null)
+        {
+            SetRect(cardRect, Vector2.zero, new Vector2(660f, 560f));
+            cardRect.SetAsFirstSibling();
+            quickGuideCardImage = cardRect.GetComponent<Image>();
+            if (quickGuideCardImage != null)
+                quickGuideCardImage.color = new Color(0.102f, 0.129f, 0.184f, 0.96f);
+        }
+
+        TextMeshProUGUI title = FindChildRecursive(quickGuidePanel.transform, "QuickGuideTitle")?.GetComponent<TextMeshProUGUI>();
+        if (title != null)
+        {
+            SetRect(title.transform, new Vector2(0f, 198f), new Vector2(560f, 60f));
+            title.text = "快速规则";
+            title.fontSize = 36f;
+            title.color = new Color(0.965f, 0.82f, 0.32f, 1f);
+            title.alignment = TextAlignmentOptions.Center;
+            ApplyChineseFont(title);
+        }
+
+        TextMeshProUGUI body = FindChildRecursive(quickGuidePanel.transform, "QuickGuideBody")?.GetComponent<TextMeshProUGUI>();
+        if (body != null)
+        {
+            SetRect(body.transform, new Vector2(0f, 40f), new Vector2(540f, 250f));
+            body.text =
+                "1. 你每回合选择一名玩家接触。\n" +
+                "2. 一阵营要找安全对象累积分数；负一要伪装并污染分数。\n" +
+                "3. 讨论阶段可以公开分数变化、指控玩家或信任玩家。\n\n" +
+                "观察谁拒绝、谁说谎、谁的分数异常。最后看阵营胜负，并用猜分结果验证判断。";
+            body.fontSize = 23f;
+            body.color = new Color(0.88f, 0.91f, 0.96f, 1f);
+            body.alignment = TextAlignmentOptions.TopLeft;
+            body.textWrappingMode = TextWrappingModes.Normal;
+            body.lineSpacing = 0f;
+            body.overflowMode = TextOverflowModes.Truncate;
+            ApplyChineseFont(body);
+        }
+
+        ConfigureGuideButton(quickGuideBackButton, "返回主菜单", new Vector2(-150f, -210f), new Color(0.18f, 0.227f, 0.322f, 1f), ReturnToMainMenu);
+        ConfigureGuideButton(quickGuideContinueButton, "我知道了", new Vector2(150f, -210f), new Color(0.16f, 0.36f, 0.25f, 1f), ContinueFromQuickGuide);
+    }
+
+    void ConfigureGuideButton(Button button, string label, Vector2 position, Color color, UnityEngine.Events.UnityAction onClick)
+    {
+        if (button == null) return;
+
+        RectTransform rect = button.transform as RectTransform;
+        if (rect != null)
+            SetRect(rect, position, new Vector2(240f, 60f));
+
+        Image image = button.GetComponent<Image>();
+        if (image != null)
+        {
+            image.color = color;
+            image.raycastTarget = true;
+        }
+
+        button.interactable = true;
+        button.onClick.RemoveAllListeners();
+        button.onClick.AddListener(onClick);
+
+        TextMeshProUGUI text = button.GetComponentInChildren<TextMeshProUGUI>(true);
+        if (text != null)
+        {
+            text.text = label;
+            text.fontSize = 23f;
+            text.color = Color.white;
+            text.alignment = TextAlignmentOptions.Center;
+            text.raycastTarget = false;
+            ApplyChineseFont(text);
+        }
     }
 
     void ShowIdentityPanel()
@@ -746,6 +940,7 @@ public class UIManager : MonoBehaviour
     void ConfigureMainMenuLayout()
     {
         if (mainMenuPanel == null) return;
+        EnsureQuickGuidePanel();
 
         Image panelImage = mainMenuPanel.GetComponent<Image>();
         if (panelImage != null)
@@ -2502,6 +2697,7 @@ public class UIManager : MonoBehaviour
     public void ReturnToMainMenu()
     {
         if (identityPanel != null) identityPanel.SetActive(false);
+        if (quickGuidePanel != null) quickGuidePanel.SetActive(false);
         if (gamePanel != null) gamePanel.SetActive(false);
         if (endGamePanel != null) endGamePanel.SetActive(false);
         if (testMenuPanel != null) testMenuPanel.SetActive(false);

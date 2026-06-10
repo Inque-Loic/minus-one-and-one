@@ -171,7 +171,7 @@ public static class OpenSourceFontMigration
         if (!HasFreeGlyphRect(fontAsset))
             SetFreeGlyphRects(fontAsset);
 
-        fontAsset.TryAddCharacters("负一和一开始游戏测试玩家回合身份阵营分数讨论阶段公开变化指控信任返回主菜单下一接受拒绝确认行动尚无数据请输入批量统计胜利平局好人坏人本局结果摘要");
+        fontAsset.TryAddCharacters("负一和一开始游戏测试玩家回合身份阵营分数讨论阶段公开变化指控信任返回主菜单下一接受拒绝确认行动尚无数据请输入批量统计胜利平局好人坏人本局结果摘要快速规则每选择接触安全对象累积伪装污染按钮观察说谎异常最后知道了");
         SetClearDynamicDataOnBuild(fontAsset, false);
         EditorUtility.SetDirty(atlas);
         EditorUtility.SetDirty(material);
