@@ -60,6 +60,13 @@ public class UIManager : MonoBehaviour
     public GameObject discussionTargetButtonPrefab;
     public Button btnEndDiscussion;              // 讨论结束确认按钮
 
+    [Header("讨论页布局调试")]
+    public float discussionOverlayAlpha = 0.86f;
+    public Vector2 discussionMessageIconPosition = new Vector2(-250f, 0f);
+    public Vector2 discussionMessageIconSize = new Vector2(22f, 22f);
+    public Vector2 discussionMessageTextOffsetMin = new Vector2(64f, 4f);
+    public Vector2 discussionMessageTextOffsetMax = new Vector2(-12f, -4f);
+
     [Header("分数猜测面板")]
     public GameObject scoreGuessingPanel;
     public TextMeshProUGUI guessingTitleText;
@@ -98,13 +105,6 @@ public class UIManager : MonoBehaviour
     public Sprite cardBackGreen;
     public Sprite cardBackRed;
     public Sprite[] playerPieces;
-
-    [Header("讨论页布局调试")]
-    public float discussionOverlayAlpha = 0.86f;
-    public Vector2 discussionMessageIconPosition = new Vector2(-250f, 0f);
-    public Vector2 discussionMessageIconSize = new Vector2(22f, 22f);
-    public Vector2 discussionMessageTextOffsetMin = new Vector2(64f, 4f);
-    public Vector2 discussionMessageTextOffsetMax = new Vector2(-12f, -4f);
 
     private List<Button> playerButtons = new List<Button>();
     private bool isBatchRunning = false;
