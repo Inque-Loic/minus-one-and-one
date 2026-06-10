@@ -1543,7 +1543,7 @@ public class UIManager : MonoBehaviour
         Image panelImage = discussionPanel.GetComponent<Image>();
         if (panelImage != null)
         {
-            panelImage.color = new Color(0.025f, 0.034f, 0.052f, 0.76f);
+            panelImage.color = new Color(0.025f, 0.034f, 0.052f, 0.86f);
             panelImage.raycastTarget = false;
         }
 
@@ -2566,7 +2566,9 @@ public class UIManager : MonoBehaviour
         if (discussionMessageContainer == null || discussionMessagePrefab == null) return;
         GameObject item = Instantiate(discussionMessagePrefab, discussionMessageContainer);
         Sprite icon = ResolveDiscussionIconFromText(text);
-        EnsureDecorImage(item.transform, "MessageTypeIcon", icon, new Vector2(-238f, 0f), new Vector2(24f, 24f), new Color(1f, 1f, 1f, 0.86f));
+        Image iconImage = EnsureDecorImage(item.transform, "MessageTypeIcon", icon, new Vector2(-250f, 0f), new Vector2(22f, 22f), new Color(1f, 1f, 1f, 0.86f));
+        if (iconImage != null)
+            iconImage.transform.SetAsLastSibling();
 
         var tmp = item.GetComponentInChildren<TextMeshProUGUI>();
         if (tmp != null)
@@ -2581,8 +2583,8 @@ public class UIManager : MonoBehaviour
             RectTransform tmpRect = tmp.rectTransform;
             tmpRect.anchorMin = new Vector2(0f, 0f);
             tmpRect.anchorMax = new Vector2(1f, 1f);
-            tmpRect.offsetMin = new Vector2(48f, 4f);
-            tmpRect.offsetMax = new Vector2(-8f, -4f);
+            tmpRect.offsetMin = new Vector2(64f, 4f);
+            tmpRect.offsetMax = new Vector2(-12f, -4f);
         }
 
         Image itemImage = item.GetComponent<Image>();
