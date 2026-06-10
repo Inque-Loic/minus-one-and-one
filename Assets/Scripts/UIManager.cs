@@ -108,6 +108,9 @@ public class UIManager : MonoBehaviour
     public Sprite cardBackRed;
     public Sprite[] playerPieces;
 
+    [Header("Dynamic Background")]
+    public DynamicBackgroundController dynamicBackground;
+
     private List<Button> playerButtons = new List<Button>();
     private bool isBatchRunning = false;
     private int batchRemaining = 0;
@@ -152,6 +155,8 @@ public class UIManager : MonoBehaviour
 
         PortfolioConfig.ApplyTo(this);
         ConfigureMainMenuLayout();
+        EnsureDynamicBackground();
+        SetBackgroundMainMenu();
     }
 
 #if UNITY_EDITOR
@@ -180,6 +185,8 @@ public class UIManager : MonoBehaviour
         ResolveChineseFont();
         ApplyChineseFontToSceneTexts();
         ConfigureMainMenuLayout();
+        EnsureDynamicBackground();
+        SetBackgroundMainMenu();
         UnityEditor.SceneManagement.EditorSceneManager.MarkSceneDirty(gameObject.scene);
     }
 
@@ -215,6 +222,8 @@ public class UIManager : MonoBehaviour
         if (manager == null) return;
         manager.BindKenneyUiArt();
         manager.ConfigureMainMenuLayout();
+        manager.EnsureDynamicBackground();
+        manager.SetBackgroundMainMenu();
         UnityEditor.EditorUtility.SetDirty(manager);
         UnityEditor.SceneManagement.EditorSceneManager.MarkSceneDirty(manager.gameObject.scene);
     }
@@ -271,6 +280,7 @@ public class UIManager : MonoBehaviour
     {
         GameManager.Instance.humanPlayerIndex = 0;
         GameManager.Instance.InitializeGame(false);
+        SetBackgroundPhase(GameManager.Instance.GetPhase());
         mainMenuPanel.SetActive(false);
         endGamePanel.SetActive(false);
         SetResponsePanelActive(false);
@@ -392,7 +402,7 @@ public class UIManager : MonoBehaviour
 
         Image panelImage = quickGuidePanel.GetComponent<Image>();
         if (panelImage != null)
-            panelImage.color = new Color(0.055f, 0.071f, 0.102f, 1f);
+            panelImage.color = new Color(0.055f, 0.071f, 0.102f, 0.84f);
 
         RectTransform cardRect = FindChildRecursive(quickGuidePanel.transform, "QuickGuideCard") as RectTransform;
         if (cardRect != null)
@@ -438,7 +448,6 @@ public class UIManager : MonoBehaviour
 
         ConfigureGuideButton(quickGuideBackButton, "返回主菜单", new Vector2(-150f, -210f), new Color(0.18f, 0.227f, 0.322f, 1f), ReturnToMainMenu, ButtonSkin.Grey, iconReturn);
         ConfigureGuideButton(quickGuideContinueButton, "我知道了", new Vector2(150f, -210f), new Color(0.16f, 0.36f, 0.25f, 1f), ContinueFromQuickGuide, ButtonSkin.Green, iconCheckmark);
-        ConfigureTabletopBackdrop(quickGuidePanel.transform, "Guide", 0.08f);
     }
 
     void ConfigureGuideButton(Button button, string label, Vector2 position, Color color, UnityEngine.Events.UnityAction onClick, ButtonSkin skin, Sprite icon)
@@ -481,6 +490,7 @@ public class UIManager : MonoBehaviour
         var players = GameManager.Instance.GetPlayers();
         int humanIdx = GameManager.Instance.humanPlayerIndex;
         bool isVillain = players[humanIdx].isVillain;
+        SetBackgroundIdentityTone(isVillain);
 
         identityPanel.SetActive(true);
         gamePanel.SetActive(false);
@@ -531,7 +541,7 @@ public class UIManager : MonoBehaviour
 
         Image panelImage = identityPanel.GetComponent<Image>();
         if (panelImage != null)
-            panelImage.color = new Color(0.075f, 0.094f, 0.133f, 0.98f);
+            panelImage.color = new Color(0.075f, 0.094f, 0.133f, 0.84f);
 
         RectTransform panelRect = identityPanel.transform as RectTransform;
         if (panelRect != null)
@@ -645,7 +655,6 @@ public class UIManager : MonoBehaviour
             backButton.onClick.AddListener(ReturnToMainMenu);
         }
 
-        ConfigureTabletopBackdrop(identityPanel.transform, "Identity", 0.08f);
     }
 
     RectTransform EnsureIdentityCard()
@@ -715,6 +724,7 @@ public class UIManager : MonoBehaviour
     {
         if (identityPanel != null) identityPanel.SetActive(false);
         gamePanel.SetActive(true);
+        SetBackgroundPhase(GameManager.Instance.GetPhase());
         RefreshGameUI();
     }
 
@@ -723,6 +733,7 @@ public class UIManager : MonoBehaviour
     {
         mainMenuPanel.SetActive(false);
         testMenuPanel.SetActive(true);
+        SetBackgroundMainMenu();
         ConfigureTestMenuLayout();
         RefreshTestStats();
     }
@@ -732,6 +743,7 @@ public class UIManager : MonoBehaviour
         if (isBatchRunning) return;
         testMenuPanel.SetActive(false);
         mainMenuPanel.SetActive(true);
+        SetBackgroundMainMenu();
     }
 
     public void OnResetTestStats()
@@ -803,6 +815,7 @@ public class UIManager : MonoBehaviour
     void StartTestGame()
     {
         GameManager.Instance.InitializeGame(true);
+        SetBackgroundPhase(GameManager.Instance.GetPhase());
         testMenuPanel.SetActive(false);
         gamePanel.SetActive(true);
         SetResponsePanelActive(false);
@@ -838,6 +851,7 @@ public class UIManager : MonoBehaviour
             if (testStatsText != null)
                 testStatsText.text = $"{BuildTestParameterSummary()}\n\n批量测试运行中\n已完成：{i} / {total}\n剩余：{total - i}";
             GameManager.Instance.InitializeGame(true);
+            SetBackgroundPhase(GameManager.Instance.GetPhase());
             yield return StartCoroutine(RunOneTestGame());
         }
 
@@ -851,7 +865,7 @@ public class UIManager : MonoBehaviour
 
         Image panelImage = testMenuPanel.GetComponent<Image>();
         if (panelImage != null)
-            panelImage.color = new Color(0.075f, 0.094f, 0.133f, 0.98f);
+            panelImage.color = new Color(0.075f, 0.094f, 0.133f, 0.84f);
 
         LayoutGroup panelLayout = testMenuPanel.GetComponent<LayoutGroup>();
         if (panelLayout != null)
@@ -894,7 +908,6 @@ public class UIManager : MonoBehaviour
         ConfigureTestButton("BatchTestButton", "批量测试", new Vector2(0f, -150f), new Color(0.165f, 0.333f, 0.502f, 1f));
         ConfigureTestButton("ResetStatsButton", "重置统计", new Vector2(-140f, -242f), new Color(0.353f, 0.290f, 0.165f, 1f), 220f);
         ConfigureTestButton("BackButton", "返回主菜单", new Vector2(140f, -242f), new Color(0.18f, 0.227f, 0.322f, 1f), 220f);
-        ConfigureTabletopBackdrop(testMenuPanel.transform, "Test", 0.08f);
     }
 
     RectTransform EnsureTestMenuCard()
@@ -1136,16 +1149,243 @@ public class UIManager : MonoBehaviour
         return image;
     }
 
-    void ConfigureTabletopBackdrop(Transform parent, string prefix, float alpha = 0.1f)
+    void EnsureDynamicBackground()
+    {
+        if (dynamicBackground != null)
+        {
+            dynamicBackground.transform.SetAsFirstSibling();
+            RemoveLegacyTabletopBackdrops();
+            return;
+        }
+
+        Transform uiRoot = GetUiRootTransform();
+        if (uiRoot == null) return;
+
+        Transform existing = uiRoot.Find("DynamicBackground");
+        if (existing != null)
+        {
+            dynamicBackground = existing.GetComponent<DynamicBackgroundController>();
+            if (dynamicBackground != null)
+            {
+                dynamicBackground.transform.SetAsFirstSibling();
+                RemoveLegacyTabletopBackdrops();
+                return;
+            }
+        }
+
+        GameObject root = new GameObject("DynamicBackground", typeof(RectTransform), typeof(CanvasGroup), typeof(DynamicBackgroundController));
+        root.transform.SetParent(uiRoot, false);
+        ApplyGuideLayer(root);
+        StretchFull(root.GetComponent<RectTransform>());
+        root.transform.SetAsFirstSibling();
+
+        CanvasGroup rootGroup = root.GetComponent<CanvasGroup>();
+        rootGroup.interactable = false;
+        rootGroup.blocksRaycasts = false;
+
+        dynamicBackground = root.GetComponent<DynamicBackgroundController>();
+
+        Image baseImage = CreateBackgroundImage(root.transform, "BaseLayer", null, new Color(0.022f, 0.030f, 0.045f, 1f));
+        StretchFull(baseImage.rectTransform);
+        dynamicBackground.baseImage = baseImage;
+
+        RectTransform patternA = CreateBackgroundGroup(root.transform, "PatternA");
+        RectTransform patternB = CreateBackgroundGroup(root.transform, "PatternB");
+        BuildPatternLayer(patternA, new Color(0.78f, 0.86f, 0.95f, 0.045f), true);
+        BuildPatternLayer(patternB, new Color(0.95f, 0.76f, 0.28f, 0.035f), false);
+        dynamicBackground.patternA = patternA;
+        dynamicBackground.patternB = patternB;
+
+        RectTransform ornamentLayer = CreateBackgroundGroup(root.transform, "OrnamentLayer");
+        AddBackgroundOrnament(ornamentLayer, "CardGreenA", cardBackGreen, new Vector2(-520f, 235f), new Vector2(108f, 154f), 0.08f, 0f, 1.4f);
+        AddBackgroundOrnament(ornamentLayer, "CardRedA", cardBackRed, new Vector2(525f, -230f), new Vector2(108f, 154f), 0.075f, 12f, 2.1f);
+        AddBackgroundOrnament(ornamentLayer, "CardRedB", cardBackRed, new Vector2(390f, 255f), new Vector2(82f, 116f), 0.06f, -9f, 3.4f);
+        AddBackgroundOrnament(ornamentLayer, "ChipBlueA", chipBlue, new Vector2(-410f, -245f), new Vector2(64f, 64f), 0.12f, 0f, 4.3f);
+        AddBackgroundOrnament(ornamentLayer, "ChipGreenA", chipGreen, new Vector2(270f, -290f), new Vector2(58f, 58f), 0.10f, 0f, 5.6f);
+        AddBackgroundOrnament(ornamentLayer, "ChipRedA", chipRed, new Vector2(-250f, 290f), new Vector2(54f, 54f), 0.09f, 0f, 6.8f);
+        AddBackgroundOrnament(ornamentLayer, "PieceBlue", GetPlayerPieceSprite(1), new Vector2(-585f, -70f), new Vector2(48f, 48f), 0.12f, 0f, 8.1f);
+        AddBackgroundOrnament(ornamentLayer, "PieceGreen", GetPlayerPieceSprite(2), new Vector2(590f, 80f), new Vector2(48f, 48f), 0.11f, 0f, 9.2f);
+        AddBackgroundOrnament(ornamentLayer, "PiecePurple", GetPlayerPieceSprite(4), new Vector2(-85f, -310f), new Vector2(42f, 42f), 0.09f, 0f, 10.5f);
+        AddBackgroundOrnament(ornamentLayer, "PieceWhite", GetPlayerPieceSprite(5), new Vector2(95f, 310f), new Vector2(42f, 42f), 0.08f, 0f, 11.7f);
+
+        Image vignette = CreateBackgroundImage(root.transform, "VignetteLayer", null, new Color(0f, 0f, 0f, 0.18f));
+        StretchFull(vignette.rectTransform);
+
+        Image overlay = CreateBackgroundImage(root.transform, "ColorOverlay", null, new Color(0.03f, 0.06f, 0.10f, 0.14f));
+        StretchFull(overlay.rectTransform);
+        dynamicBackground.colorOverlay = overlay;
+
+        RemoveLegacyTabletopBackdrops();
+    }
+
+    Transform GetUiRootTransform()
+    {
+        if (mainMenuPanel != null && mainMenuPanel.transform.parent != null) return mainMenuPanel.transform.parent;
+        if (gamePanel != null && gamePanel.transform.parent != null) return gamePanel.transform.parent;
+        if (identityPanel != null && identityPanel.transform.parent != null) return identityPanel.transform.parent;
+        if (testMenuPanel != null && testMenuPanel.transform.parent != null) return testMenuPanel.transform.parent;
+        if (endGamePanel != null && endGamePanel.transform.parent != null) return endGamePanel.transform.parent;
+        return transform;
+    }
+
+    RectTransform CreateBackgroundGroup(Transform parent, string name)
+    {
+        GameObject obj = new GameObject(name, typeof(RectTransform), typeof(CanvasGroup));
+        obj.transform.SetParent(parent, false);
+        ApplyGuideLayer(obj);
+        RectTransform rect = obj.GetComponent<RectTransform>();
+        StretchFull(rect);
+
+        CanvasGroup group = obj.GetComponent<CanvasGroup>();
+        group.interactable = false;
+        group.blocksRaycasts = false;
+
+        return rect;
+    }
+
+    Image CreateBackgroundImage(Transform parent, string name, Sprite sprite, Color color)
+    {
+        GameObject obj = new GameObject(name, typeof(RectTransform), typeof(Image), typeof(CanvasGroup));
+        obj.transform.SetParent(parent, false);
+        ApplyGuideLayer(obj);
+
+        Image image = obj.GetComponent<Image>();
+        image.sprite = sprite;
+        image.color = color;
+        image.raycastTarget = false;
+        image.preserveAspect = sprite != null;
+
+        CanvasGroup group = obj.GetComponent<CanvasGroup>();
+        group.interactable = false;
+        group.blocksRaycasts = false;
+
+        return image;
+    }
+
+    void BuildPatternLayer(RectTransform parent, Color color, bool diagonal)
     {
         if (parent == null) return;
 
-        EnsureDecorImage(parent, prefix + "BackdropCardA", cardBackGreen, new Vector2(-430f, 218f), new Vector2(92f, 132f), new Color(1f, 1f, 1f, alpha * 0.9f), false);
-        EnsureDecorImage(parent, prefix + "BackdropCardB", cardBackRed, new Vector2(430f, -218f), new Vector2(92f, 132f), new Color(1f, 1f, 1f, alpha * 0.85f), false);
-        EnsureDecorImage(parent, prefix + "BackdropChipA", chipBlue, new Vector2(350f, 206f), new Vector2(54f, 54f), new Color(1f, 1f, 1f, alpha), false);
-        EnsureDecorImage(parent, prefix + "BackdropChipB", chipGreen, new Vector2(-350f, -206f), new Vector2(56f, 56f), new Color(1f, 1f, 1f, alpha * 0.95f), false);
-        EnsureDecorImage(parent, prefix + "BackdropPieceA", GetPlayerPieceSprite(2), new Vector2(-250f, 270f), new Vector2(46f, 46f), new Color(1f, 1f, 1f, alpha * 0.9f), false);
-        EnsureDecorImage(parent, prefix + "BackdropPieceB", GetPlayerPieceSprite(4), new Vector2(250f, -270f), new Vector2(46f, 46f), new Color(1f, 1f, 1f, alpha * 0.9f), false);
+        for (int i = -5; i <= 5; i++)
+        {
+            Image line = CreateBackgroundImage(parent, diagonal ? $"DiagonalLine{i}" : $"TableLine{i}", null, color);
+            RectTransform rect = line.rectTransform;
+            rect.anchorMin = new Vector2(0.5f, 0.5f);
+            rect.anchorMax = new Vector2(0.5f, 0.5f);
+            rect.pivot = new Vector2(0.5f, 0.5f);
+            rect.anchoredPosition = diagonal ? new Vector2(i * 170f, 0f) : new Vector2(0f, i * 120f);
+            rect.sizeDelta = diagonal ? new Vector2(2f, 1100f) : new Vector2(1450f, 2f);
+            rect.localRotation = diagonal ? Quaternion.Euler(0f, 0f, 28f) : Quaternion.identity;
+        }
+
+        for (int i = 0; i < 8; i++)
+        {
+            Image node = CreateBackgroundImage(parent, $"Node{i}", iconInformation, color * 1.8f);
+            RectTransform rect = node.rectTransform;
+            rect.anchorMin = new Vector2(0.5f, 0.5f);
+            rect.anchorMax = new Vector2(0.5f, 0.5f);
+            rect.pivot = new Vector2(0.5f, 0.5f);
+            rect.anchoredPosition = new Vector2(-520f + i * 150f, Mathf.Sin(i * 1.7f) * 250f);
+            rect.sizeDelta = new Vector2(18f, 18f);
+        }
+    }
+
+    void AddBackgroundOrnament(RectTransform parent, string name, Sprite sprite, Vector2 position, Vector2 size, float alpha, float rotation, float phase)
+    {
+        if (parent == null || sprite == null) return;
+
+        Image image = CreateBackgroundImage(parent, name, sprite, new Color(1f, 1f, 1f, alpha));
+        RectTransform rect = image.rectTransform;
+        rect.anchorMin = new Vector2(0.5f, 0.5f);
+        rect.anchorMax = new Vector2(0.5f, 0.5f);
+        rect.pivot = new Vector2(0.5f, 0.5f);
+        rect.anchoredPosition = position;
+        rect.sizeDelta = size;
+        rect.localRotation = Quaternion.Euler(0f, 0f, rotation);
+
+        DynamicBackgroundElement element = image.gameObject.AddComponent<DynamicBackgroundElement>();
+        element.floatAmplitude = 10f + (phase % 4f);
+        element.floatSpeed = 0.26f + (phase % 3f) * 0.05f;
+        element.rotationAmplitude = 2f + (phase % 4f);
+        element.rotationSpeed = 0.18f + (phase % 2f) * 0.06f;
+        element.alphaMin = alpha * 0.55f;
+        element.alphaMax = alpha * 1.25f;
+        element.Initialize(phase);
+        dynamicBackground.ornaments.Add(element);
+    }
+
+    void StretchFull(RectTransform rect)
+    {
+        if (rect == null) return;
+        rect.anchorMin = Vector2.zero;
+        rect.anchorMax = Vector2.one;
+        rect.offsetMin = Vector2.zero;
+        rect.offsetMax = Vector2.zero;
+        rect.pivot = new Vector2(0.5f, 0.5f);
+    }
+
+    void RemoveLegacyTabletopBackdrops()
+    {
+        Transform[] panels =
+        {
+            mainMenuPanel != null ? mainMenuPanel.transform : null,
+            quickGuidePanel != null ? quickGuidePanel.transform : null,
+            identityPanel != null ? identityPanel.transform : null,
+            testMenuPanel != null ? testMenuPanel.transform : null,
+            gamePanel != null ? gamePanel.transform : null,
+            scoreGuessingPanel != null ? scoreGuessingPanel.transform : null,
+            endGamePanel != null ? endGamePanel.transform : null
+        };
+
+        foreach (Transform panel in panels)
+            RemoveLegacyBackdropsFrom(panel);
+    }
+
+    void RemoveLegacyBackdropsFrom(Transform parent)
+    {
+        if (parent == null) return;
+
+        for (int i = parent.childCount - 1; i >= 0; i--)
+        {
+            Transform child = parent.GetChild(i);
+            if (!child.name.Contains("Backdrop")) continue;
+
+            if (Application.isPlaying)
+                Destroy(child.gameObject);
+            else
+                DestroyImmediate(child.gameObject);
+        }
+    }
+
+    void SetBackgroundMainMenu()
+    {
+        EnsureDynamicBackground();
+        if (dynamicBackground != null)
+            dynamicBackground.SetMainMenuTone();
+    }
+
+    void SetBackgroundPhase(RoundPhase phase)
+    {
+        EnsureDynamicBackground();
+        if (dynamicBackground != null)
+            dynamicBackground.SetPhase(phase);
+    }
+
+    void SetBackgroundIdentityTone(bool isVillain)
+    {
+        EnsureDynamicBackground();
+        if (dynamicBackground != null)
+            dynamicBackground.SetIdentityTone(isVillain);
+    }
+
+    void SetBackgroundResultTone()
+    {
+        EnsureDynamicBackground();
+        if (dynamicBackground == null || GameManager.Instance == null) return;
+
+        GameManager.Instance.GetCampAverages(out float goodAverage, out float villainAverage);
+        bool isDraw = Mathf.Approximately(goodAverage, villainAverage);
+        dynamicBackground.SetResultTone(villainAverage > goodAverage, isDraw);
     }
 
     Sprite GetPlayerPieceSprite(int playerIndex)
@@ -1165,10 +1405,11 @@ public class UIManager : MonoBehaviour
     {
         if (mainMenuPanel == null) return;
         EnsureQuickGuidePanel();
+        RemoveLegacyTabletopBackdrops();
 
         Image panelImage = mainMenuPanel.GetComponent<Image>();
         if (panelImage != null)
-            panelImage.color = new Color(0.055f, 0.071f, 0.102f, 1f);
+            panelImage.color = new Color(0.055f, 0.071f, 0.102f, 0.82f);
 
         LayoutGroup panelLayout = mainMenuPanel.GetComponent<LayoutGroup>();
         if (panelLayout != null)
@@ -1205,7 +1446,6 @@ public class UIManager : MonoBehaviour
 
         ConfigureMainMenuButton(startButton, "开始游戏", new Vector2(0f, 12f), new Color(0.16f, 0.36f, 0.25f, 1f), ButtonSkin.Green, iconCheckmark);
         ConfigureMainMenuButton(testButton, "游戏测试", new Vector2(0f, -92f), new Color(0.165f, 0.333f, 0.502f, 1f), ButtonSkin.Blue, iconInformation);
-        ConfigureTabletopBackdrop(mainMenuPanel.transform, "Menu", 0.11f);
     }
 
     void ConfigureMainMenuText(string objectName, string content, Vector2 position, Vector2 size, float fontSize, Color color)
@@ -1326,7 +1566,7 @@ public class UIManager : MonoBehaviour
 
         Image panelImage = gamePanel.GetComponent<Image>();
         if (panelImage != null)
-            panelImage.color = new Color(0.055f, 0.071f, 0.102f, 1f);
+            panelImage.color = new Color(0.055f, 0.071f, 0.102f, 0.78f);
 
         RectTransform panelRect = gamePanel.transform as RectTransform;
         if (panelRect != null)
@@ -1358,7 +1598,6 @@ public class UIManager : MonoBehaviour
 
         ConfigurePlayerListArea();
         ConfigureSkipButton();
-        ConfigureTabletopBackdrop(gamePanel.transform, "Game", 0.075f);
     }
 
     RectTransform EnsureGameCard(string objectName, ref Image cachedImage, Color color)
@@ -2070,6 +2309,7 @@ public class UIManager : MonoBehaviour
     void RefreshGameUI()
     {
         var phase = GameManager.Instance.GetPhase();
+        SetBackgroundPhase(phase);
         if (phase == RoundPhase.RoundEnd || phase == RoundPhase.GameOver) return;
 
         int round = GameManager.Instance.GetCurrentRound();
@@ -2176,6 +2416,7 @@ public class UIManager : MonoBehaviour
 
         bool success = GameManager.Instance.InitiateContact(currentTurn, targetIndex);
         if (!success) return;
+        SetBackgroundPhase(GameManager.Instance.GetPhase());
 
         var players = GameManager.Instance.GetPlayers();
         RebuildPlayerList();
@@ -2206,6 +2447,7 @@ public class UIManager : MonoBehaviour
     {
         var players = GameManager.Instance.GetPlayers();
         bool canReject = GameManager.Instance.CanPlayerReject(targetIndex);
+        SetBackgroundPhase(RoundPhase.Responding);
 
         SetResponsePanelActive(true);
         ConfigureResponsePanelLayout(canReject);
@@ -2281,6 +2523,7 @@ public class UIManager : MonoBehaviour
     void HandlePhaseAfterResponse(string resultMsg)
     {
         var phase = GameManager.Instance.GetPhase();
+        SetBackgroundPhase(phase);
         if (messageText != null) messageText.text = resultMsg;
 
         if (phase == RoundPhase.GameOver)
@@ -2316,6 +2559,7 @@ public class UIManager : MonoBehaviour
     void StartDiscussionRoutine()
     {
         if (discussionRoutine != null) return;
+        SetBackgroundPhase(RoundPhase.Discussion);
         StopAutoAdvanceRoutine();
         discussionRoutine = StartCoroutine(RunDiscussionPhase());
     }
@@ -2323,6 +2567,7 @@ public class UIManager : MonoBehaviour
     void StartScoreGuessingRoutine()
     {
         if (scoreGuessingRoutine != null) return;
+        SetBackgroundPhase(RoundPhase.ScoreGuessing);
         StopAutoAdvanceRoutine();
         scoreGuessingRoutine = StartCoroutine(RunScoreGuessingPhase());
     }
@@ -2413,6 +2658,7 @@ public class UIManager : MonoBehaviour
     {
         gamePanel.SetActive(false);
         testMenuPanel.SetActive(true);
+        SetBackgroundMainMenu();
         RefreshTestStats();
     }
 
@@ -2692,6 +2938,7 @@ public class UIManager : MonoBehaviour
             discussionPanel.SetActive(active);
             if (active)
             {
+                SetBackgroundPhase(RoundPhase.Discussion);
                 ConfigureDiscussionLayout();
             if (humanDiscussionInputPanel != null) humanDiscussionInputPanel.SetActive(false);
             if (btnEndDiscussion != null) btnEndDiscussion.gameObject.SetActive(false);
@@ -2717,6 +2964,7 @@ public class UIManager : MonoBehaviour
     // ─── 分数猜测阶段（正常模式）─────────────────
     IEnumerator RunScoreGuessingPhase()
     {
+        SetBackgroundPhase(RoundPhase.ScoreGuessing);
         if (scoreGuessingPanel != null) scoreGuessingPanel.SetActive(true);
         if (guessingResultText != null) guessingResultText.text = "";
         ConfigureScoreGuessingLayout();
@@ -2823,7 +3071,7 @@ public class UIManager : MonoBehaviour
         Image panelImage = scoreGuessingPanel.GetComponent<Image>();
         if (panelImage != null)
         {
-            panelImage.color = new Color(0.055f, 0.071f, 0.102f, 0.98f);
+            panelImage.color = new Color(0.055f, 0.071f, 0.102f, 0.84f);
             panelImage.raycastTarget = true;
         }
 
@@ -2857,7 +3105,6 @@ public class UIManager : MonoBehaviour
             guessingResultText.textWrappingMode = TextWrappingModes.Normal;
         }
 
-        ConfigureTabletopBackdrop(scoreGuessingPanel.transform, "Guessing", 0.07f);
     }
 
     void StyleGuessingRow(GameObject row, int playerIndex)
@@ -3025,6 +3272,7 @@ public class UIManager : MonoBehaviour
     {
         gamePanel.SetActive(false);
         endGamePanel.SetActive(true);
+        SetBackgroundResultTone();
         ConfigureEndGameLayout();
 
         var players = GameManager.Instance.GetPlayers();
@@ -3055,7 +3303,7 @@ public class UIManager : MonoBehaviour
             Image panelImage = endGamePanel.GetComponent<Image>();
             if (panelImage != null)
             {
-                panelImage.color = new Color(0.055f, 0.071f, 0.102f, 1f);
+                panelImage.color = new Color(0.055f, 0.071f, 0.102f, 0.82f);
                 panelImage.raycastTarget = true;
             }
 
@@ -3110,8 +3358,6 @@ public class UIManager : MonoBehaviour
             }
         }
 
-        if (endGamePanel != null)
-            ConfigureTabletopBackdrop(endGamePanel.transform, "EndGame", 0.09f);
     }
 
     Transform FindChildRecursive(Transform parent, string childName)
@@ -3141,6 +3387,7 @@ public class UIManager : MonoBehaviour
         SetResponsePanelActive(false);
         SetRoundEndPanelActive(false);
         if (mainMenuPanel != null) mainMenuPanel.SetActive(true);
+        SetBackgroundMainMenu();
         ConfigureMainMenuLayout();
     }
 
