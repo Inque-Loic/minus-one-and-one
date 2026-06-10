@@ -1159,6 +1159,7 @@ public class UIManager : MonoBehaviour
         if (dynamicBackground != null)
         {
             dynamicBackground.transform.SetAsFirstSibling();
+            RefreshDynamicBackgroundBaseImage();
             RemoveLegacyTabletopBackdrops();
             return;
         }
@@ -1173,6 +1174,7 @@ public class UIManager : MonoBehaviour
             if (dynamicBackground != null)
             {
                 dynamicBackground.transform.SetAsFirstSibling();
+                RefreshDynamicBackgroundBaseImage();
                 RemoveLegacyTabletopBackdrops();
                 return;
             }
@@ -1223,6 +1225,35 @@ public class UIManager : MonoBehaviour
         dynamicBackground.colorOverlay = overlay;
 
         RemoveLegacyTabletopBackdrops();
+    }
+
+    void RefreshDynamicBackgroundBaseImage()
+    {
+        if (dynamicBackground == null) return;
+
+        if (dynamicBackground.baseImage == null)
+        {
+            Transform baseLayer = dynamicBackground.transform.Find("BaseLayer");
+            if (baseLayer != null)
+                dynamicBackground.baseImage = baseLayer.GetComponent<Image>();
+        }
+
+        if (dynamicBackground.baseImage == null)
+        {
+            Image baseImage = CreateBackgroundImage(dynamicBackground.transform, "BaseLayer", null, Color.white);
+            StretchFull(baseImage.rectTransform);
+            baseImage.transform.SetAsFirstSibling();
+            dynamicBackground.baseImage = baseImage;
+        }
+
+        Sprite backgroundSprite = GetMainBackgroundSprite();
+        dynamicBackground.baseImage.sprite = backgroundSprite;
+        dynamicBackground.baseImage.color = backgroundSprite != null
+            ? Color.white
+            : new Color(0.60f, 0.70f, 0.64f, 1f);
+        dynamicBackground.baseImage.preserveAspect = false;
+        dynamicBackground.baseImage.raycastTarget = false;
+        dynamicBackground.baseImage.transform.SetAsFirstSibling();
     }
 
     Transform GetUiRootTransform()
