@@ -66,6 +66,8 @@ public class UIManager : MonoBehaviour
     public Vector2 discussionMessageIconSize = new Vector2(22f, 22f);
     public Vector2 discussionMessageTextOffsetMin = new Vector2(64f, 4f);
     public Vector2 discussionMessageTextOffsetMax = new Vector2(-12f, -4f);
+    public Vector2 discussionMessageContentOffsetMin = Vector2.zero;
+    public Vector2 discussionMessageContentOffsetMax = Vector2.zero;
 
     [Header("分数猜测面板")]
     public GameObject scoreGuessingPanel;
@@ -155,9 +157,21 @@ public class UIManager : MonoBehaviour
 #if UNITY_EDITOR
     void OnValidate()
     {
-        if (Application.isPlaying) return;
+        if (Application.isPlaying)
+        {
+            UnityEditor.EditorApplication.delayCall -= RefreshDiscussionLayoutInEditor;
+            UnityEditor.EditorApplication.delayCall += RefreshDiscussionLayoutInEditor;
+            return;
+        }
         UnityEditor.EditorApplication.delayCall -= ConfigureMainMenuLayoutInEditor;
         UnityEditor.EditorApplication.delayCall += ConfigureMainMenuLayoutInEditor;
+    }
+
+    void RefreshDiscussionLayoutInEditor()
+    {
+        if (this == null || !Application.isPlaying) return;
+        ConfigureDiscussionLayout();
+        RefreshDiscussionMessageLayout();
     }
 
     void ConfigureMainMenuLayoutInEditor()
@@ -1744,8 +1758,8 @@ public class UIManager : MonoBehaviour
             contentRect.anchorMin = new Vector2(0f, 1f);
             contentRect.anchorMax = new Vector2(1f, 1f);
             contentRect.pivot = new Vector2(0.5f, 1f);
-            contentRect.offsetMin = Vector2.zero;
-            contentRect.offsetMax = Vector2.zero;
+            contentRect.offsetMin = discussionMessageContentOffsetMin;
+            contentRect.offsetMax = discussionMessageContentOffsetMax;
         }
 
         foreach (LayoutGroup layout in discussionMessageContainer.GetComponents<LayoutGroup>())
@@ -2572,16 +2586,42 @@ public class UIManager : MonoBehaviour
     {
         if (discussionMessageContainer == null || discussionMessagePrefab == null) return;
         GameObject item = Instantiate(discussionMessagePrefab, discussionMessageContainer);
+
+        var tmp = item.GetComponentInChildren<TextMeshProUGUI>();
+        if (tmp != null)
+            tmp.text = text;
+
+        StyleDiscussionMessageItem(item);
+
+        Canvas.ForceUpdateCanvases();
+        var scrollRect = discussionMessageContainer.GetComponentInParent<UnityEngine.UI.ScrollRect>();
+        if (scrollRect != null) scrollRect.verticalNormalizedPosition = 0f;
+    }
+
+    void RefreshDiscussionMessageLayout()
+    {
+        if (discussionMessageContainer == null) return;
+
+        foreach (Transform child in discussionMessageContainer)
+            StyleDiscussionMessageItem(child.gameObject);
+
+        Canvas.ForceUpdateCanvases();
+    }
+
+    void StyleDiscussionMessageItem(GameObject item)
+    {
+        if (item == null) return;
+
+        var tmp = item.GetComponentInChildren<TextMeshProUGUI>();
+        string text = tmp != null ? tmp.text : "";
         Sprite icon = ResolveDiscussionIconFromText(text);
         Image iconImage = EnsureDecorImage(item.transform, "MessageTypeIcon", icon, discussionMessageIconPosition, discussionMessageIconSize, new Color(1f, 1f, 1f, 0.86f));
         if (iconImage != null)
             iconImage.transform.SetAsLastSibling();
 
-        var tmp = item.GetComponentInChildren<TextMeshProUGUI>();
         if (tmp != null)
         {
             ApplyChineseFont(tmp);
-            tmp.text = text;
             tmp.fontSize = 22f;
             tmp.color = new Color(0.92f, 0.94f, 0.98f, 1f);
             tmp.alignment = TextAlignmentOptions.Left;
@@ -2610,10 +2650,6 @@ public class UIManager : MonoBehaviour
             layoutElement = item.AddComponent<LayoutElement>();
         layoutElement.minHeight = 42f;
         layoutElement.preferredHeight = 42f;
-
-        Canvas.ForceUpdateCanvases();
-        var scrollRect = discussionMessageContainer.GetComponentInParent<UnityEngine.UI.ScrollRect>();
-        if (scrollRect != null) scrollRect.verticalNormalizedPosition = 0f;
     }
 
     Sprite ResolveDiscussionIconFromText(string text)
