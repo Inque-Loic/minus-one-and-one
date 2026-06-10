@@ -1508,12 +1508,12 @@ public class UIManager : MonoBehaviour
         RectTransform cardRect = EnsureMainMenuCard();
         if (cardRect != null)
         {
-            SetRect(cardRect, Vector2.zero, new Vector2(620f, 520f));
+            SetRect(cardRect, new Vector2(0f, -4f), new Vector2(700f, 440f));
             cardRect.SetAsFirstSibling();
         }
 
-        EnsureDecorImage(mainMenuPanel.transform, "MenuCardDecorLeft", cardBackGreen, new Vector2(-242f, 158f), new Vector2(92f, 132f), new Color(1f, 1f, 1f, 0.24f), false);
-        EnsureDecorImage(mainMenuPanel.transform, "MenuCardDecorRight", cardBackRed, new Vector2(242f, -158f), new Vector2(92f, 132f), new Color(1f, 1f, 1f, 0.22f), false);
+        EnsureDecorImage(mainMenuPanel.transform, "MenuCardDecorLeft", cardBackGreen, new Vector2(-300f, 128f), new Vector2(78f, 112f), new Color(1f, 1f, 1f, 0.12f), false);
+        EnsureDecorImage(mainMenuPanel.transform, "MenuCardDecorRight", cardBackRed, new Vector2(300f, -124f), new Vector2(78f, 112f), new Color(1f, 1f, 1f, 0.10f), false);
 
         ConfigureMainMenuText("MainMenuTitle", "负一和一", new Vector2(0f, 150f), new Vector2(520f, 70f), 44f, new Color(0.965f, 0.82f, 0.32f, 1f));
         ConfigureMainMenuText("MainMenuSubtitle", "在接触、声明与猜分之间识破负一", new Vector2(0f, 96f), new Vector2(520f, 40f), 21f, new Color(0.82f, 0.86f, 0.92f, 1f));
@@ -1527,6 +1527,21 @@ public class UIManager : MonoBehaviour
 
     void ConfigureMainMenuText(string objectName, string content, Vector2 position, Vector2 size, float fontSize, Color color)
     {
+        if (objectName == "MainMenuTitle")
+        {
+            position = new Vector2(0f, 144f);
+            size = new Vector2(560f, 76f);
+            fontSize = 48f;
+            color = new Color(0.98f, 0.78f, 0.28f, 1f);
+        }
+        else if (objectName == "MainMenuSubtitle")
+        {
+            position = new Vector2(0f, 88f);
+            size = new Vector2(560f, 40f);
+            fontSize = 21f;
+            color = new Color(0.94f, 0.95f, 0.88f, 0.96f);
+        }
+
         Transform textTransform = mainMenuPanel.transform.Find(objectName);
         TextMeshProUGUI text;
 
@@ -1554,6 +1569,26 @@ public class UIManager : MonoBehaviour
         text.raycastTarget = false;
         text.overflowMode = TextOverflowModes.Truncate;
         ApplyChineseFont(text);
+        ApplyMainMenuTextEffects(text, objectName == "MainMenuTitle");
+    }
+
+    void ApplyMainMenuTextEffects(TextMeshProUGUI text, bool isTitle)
+    {
+        if (text == null) return;
+
+        text.outlineWidth = isTitle ? 0.18f : 0.10f;
+        text.outlineColor = isTitle
+            ? new Color(0.16f, 0.10f, 0.04f, 0.78f)
+            : new Color(0.04f, 0.07f, 0.08f, 0.70f);
+
+        Shadow shadow = text.GetComponent<Shadow>();
+        if (shadow == null)
+            shadow = text.gameObject.AddComponent<Shadow>();
+        shadow.effectColor = isTitle
+            ? new Color(0.20f, 0.13f, 0.03f, 0.70f)
+            : new Color(0.02f, 0.04f, 0.05f, 0.62f);
+        shadow.effectDistance = isTitle ? new Vector2(2.5f, -2.5f) : new Vector2(1.8f, -1.8f);
+        shadow.useGraphicAlpha = true;
     }
 
     void ApplyMainMenuFont(TextMeshProUGUI target)
@@ -1587,7 +1622,7 @@ public class UIManager : MonoBehaviour
             mainMenuCardImage = existing.GetComponent<Image>();
             if (mainMenuCardImage != null)
             {
-                mainMenuCardImage.color = new Color(0.102f, 0.129f, 0.184f, 0.94f);
+                mainMenuCardImage.color = new Color(0.96f, 0.94f, 0.78f, 0.13f);
                 mainMenuCardImage.raycastTarget = false;
             }
             return existing as RectTransform;
@@ -1596,7 +1631,7 @@ public class UIManager : MonoBehaviour
         GameObject card = new GameObject("MainMenuCard", typeof(RectTransform), typeof(Image));
         card.transform.SetParent(mainMenuPanel.transform, false);
         mainMenuCardImage = card.GetComponent<Image>();
-        mainMenuCardImage.color = new Color(0.102f, 0.129f, 0.184f, 0.94f);
+        mainMenuCardImage.color = new Color(0.96f, 0.94f, 0.78f, 0.13f);
         mainMenuCardImage.raycastTarget = false;
         return card.GetComponent<RectTransform>();
     }
@@ -1605,35 +1640,60 @@ public class UIManager : MonoBehaviour
     {
         if (buttonTransform == null) return;
 
-        SetRect(buttonTransform, position, new Vector2(360f, 68f));
+        bool isStartButton = buttonTransform.name.Contains("Start");
+        position = isStartButton ? new Vector2(0f, 2f) : new Vector2(0f, -84f);
+        color = isStartButton
+            ? new Color(0.92f, 0.74f, 0.30f, 0.72f)
+            : new Color(0.70f, 0.82f, 0.76f, 0.56f);
+        skin = isStartButton ? ButtonSkin.Yellow : ButtonSkin.Grey;
+
+        SetRect(buttonTransform, position, new Vector2(360f, 62f));
         buttonTransform.SetAsLastSibling();
 
         Button button = buttonTransform.GetComponent<Button>();
         if (button != null)
         {
             ApplyButtonArt(button, skin, color);
+            Image image = button.GetComponent<Image>();
+            if (image != null)
+            {
+                image.color = color;
+                image.raycastTarget = true;
+            }
+
             button.interactable = true;
             ColorBlock colors = button.colors;
             colors.normalColor = Color.white;
-            colors.highlightedColor = new Color(1f, 0.94f, 0.72f, 1f);
-            colors.pressedColor = new Color(0.84f, 0.74f, 0.50f, 1f);
+            colors.highlightedColor = new Color(1.12f, 1.05f, 0.82f, 1f);
+            colors.pressedColor = new Color(0.82f, 0.74f, 0.56f, 1f);
             colors.selectedColor = colors.normalColor;
             colors.disabledColor = new Color(1f, 1f, 1f, 0.6f);
             colors.fadeDuration = 0.06f;
             button.colors = colors;
         }
 
-        EnsureDecorImage(buttonTransform, "Icon", icon, new Vector2(-120f, 0f), new Vector2(30f, 30f), Color.white);
+        EnsureDecorImage(buttonTransform, "Icon", icon, new Vector2(-116f, 0f), new Vector2(28f, 28f), new Color(1f, 0.98f, 0.82f, 0.92f));
 
         TextMeshProUGUI text = buttonTransform.GetComponentInChildren<TextMeshProUGUI>(true);
         if (text != null)
         {
             text.enabled = true;
             text.text = label;
-            text.fontSize = 28f;
-            text.color = Color.white;
+            text.fontSize = 27f;
+            text.color = isStartButton
+                ? new Color(1f, 0.98f, 0.84f, 1f)
+                : new Color(0.95f, 0.99f, 0.96f, 0.98f);
             text.alignment = TextAlignmentOptions.Center;
             text.raycastTarget = false;
+            text.outlineWidth = 0.12f;
+            text.outlineColor = new Color(0.05f, 0.08f, 0.06f, 0.82f);
+
+            Shadow shadow = text.GetComponent<Shadow>();
+            if (shadow == null)
+                shadow = text.gameObject.AddComponent<Shadow>();
+            shadow.effectColor = new Color(0.02f, 0.04f, 0.04f, 0.68f);
+            shadow.effectDistance = new Vector2(1.8f, -1.8f);
+            shadow.useGraphicAlpha = true;
         }
     }
 
