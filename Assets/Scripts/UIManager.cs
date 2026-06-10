@@ -3,10 +3,12 @@ using UnityEngine.UI;
 using TMPro;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 
 public class UIManager : MonoBehaviour
 {
     const string DefaultChineseFontPath = "Assets/Fonts/OpenSource/NotoSansCJKsc-Dynamic.asset";
+    const string DynamicBackgroundFileName = "minus-one-and-one-menu-bg-v1.png";
     public static UIManager Instance;
 
     [Header("UI面板")]
@@ -61,7 +63,7 @@ public class UIManager : MonoBehaviour
     public Button btnEndDiscussion;              // 讨论结束确认按钮
 
     [Header("讨论页布局调试")]
-    public float discussionOverlayAlpha = 0.86f;
+    public float discussionOverlayAlpha = 0.56f;
     public Vector2 discussionMessageIconPosition = new Vector2(-250f, 0f);
     public Vector2 discussionMessageIconSize = new Vector2(22f, 22f);
     public Vector2 discussionMessageTextOffsetMin = new Vector2(64f, 4f);
@@ -110,6 +112,7 @@ public class UIManager : MonoBehaviour
 
     [Header("Dynamic Background")]
     public DynamicBackgroundController dynamicBackground;
+    public Sprite mainBackgroundArt;
 
     private List<Button> playerButtons = new List<Button>();
     private bool isBatchRunning = false;
@@ -136,6 +139,7 @@ public class UIManager : MonoBehaviour
     private Image quickGuideCardImage;
     private Button quickGuideContinueButton;
     private Button quickGuideBackButton;
+    private Sprite runtimeBackgroundSprite;
 
     enum ButtonSkin
     {
@@ -246,6 +250,7 @@ public class UIManager : MonoBehaviour
         chipGreen = LoadSprite("Assets/Art/Kenney/BoardGame/PNG/Chips/chipGreen.png");
         chipBlue = LoadSprite("Assets/Art/Kenney/BoardGame/PNG/Chips/chipBlue.png");
         chipRed = LoadSprite("Assets/Art/Kenney/BoardGame/PNG/Chips/chipRedWhite.png");
+        mainBackgroundArt = LoadSprite("Assets/StreamingAssets/Backgrounds/minus-one-and-one-menu-bg-v1.png");
         cardBackGreen = LoadSprite("Assets/Art/Kenney/BoardGame/PNG/Cards/cardBack_green2.png");
         cardBackRed = LoadSprite("Assets/Art/Kenney/BoardGame/PNG/Cards/cardBack_red2.png");
         playerPieces = new[]
@@ -402,7 +407,7 @@ public class UIManager : MonoBehaviour
 
         Image panelImage = quickGuidePanel.GetComponent<Image>();
         if (panelImage != null)
-            panelImage.color = new Color(0.055f, 0.071f, 0.102f, 0.84f);
+            panelImage.color = new Color(0.055f, 0.071f, 0.102f, 0.38f);
 
         RectTransform cardRect = FindChildRecursive(quickGuidePanel.transform, "QuickGuideCard") as RectTransform;
         if (cardRect != null)
@@ -541,7 +546,7 @@ public class UIManager : MonoBehaviour
 
         Image panelImage = identityPanel.GetComponent<Image>();
         if (panelImage != null)
-            panelImage.color = new Color(0.075f, 0.094f, 0.133f, 0.84f);
+            panelImage.color = new Color(0.075f, 0.094f, 0.133f, 0.42f);
 
         RectTransform panelRect = identityPanel.transform as RectTransform;
         if (panelRect != null)
@@ -865,7 +870,7 @@ public class UIManager : MonoBehaviour
 
         Image panelImage = testMenuPanel.GetComponent<Image>();
         if (panelImage != null)
-            panelImage.color = new Color(0.075f, 0.094f, 0.133f, 0.84f);
+            panelImage.color = new Color(0.075f, 0.094f, 0.133f, 0.40f);
 
         LayoutGroup panelLayout = testMenuPanel.GetComponent<LayoutGroup>();
         if (panelLayout != null)
@@ -1185,14 +1190,16 @@ public class UIManager : MonoBehaviour
 
         dynamicBackground = root.GetComponent<DynamicBackgroundController>();
 
-        Image baseImage = CreateBackgroundImage(root.transform, "BaseLayer", null, new Color(0.022f, 0.030f, 0.045f, 1f));
+        Sprite backgroundSprite = GetMainBackgroundSprite();
+        Image baseImage = CreateBackgroundImage(root.transform, "BaseLayer", backgroundSprite, backgroundSprite != null ? Color.white : new Color(0.60f, 0.70f, 0.64f, 1f));
         StretchFull(baseImage.rectTransform);
+        baseImage.preserveAspect = false;
         dynamicBackground.baseImage = baseImage;
 
         RectTransform patternA = CreateBackgroundGroup(root.transform, "PatternA");
         RectTransform patternB = CreateBackgroundGroup(root.transform, "PatternB");
-        BuildPatternLayer(patternA, new Color(0.78f, 0.86f, 0.95f, 0.045f), true);
-        BuildPatternLayer(patternB, new Color(0.95f, 0.76f, 0.28f, 0.035f), false);
+        BuildPatternLayer(patternA, new Color(0.78f, 0.86f, 0.95f, 0.020f), true);
+        BuildPatternLayer(patternB, new Color(0.95f, 0.76f, 0.28f, 0.018f), false);
         dynamicBackground.patternA = patternA;
         dynamicBackground.patternB = patternB;
 
@@ -1208,10 +1215,10 @@ public class UIManager : MonoBehaviour
         AddBackgroundOrnament(ornamentLayer, "PiecePurple", GetPlayerPieceSprite(4), new Vector2(-85f, -310f), new Vector2(42f, 42f), 0.09f, 0f, 10.5f);
         AddBackgroundOrnament(ornamentLayer, "PieceWhite", GetPlayerPieceSprite(5), new Vector2(95f, 310f), new Vector2(42f, 42f), 0.08f, 0f, 11.7f);
 
-        Image vignette = CreateBackgroundImage(root.transform, "VignetteLayer", null, new Color(0f, 0f, 0f, 0.18f));
+        Image vignette = CreateBackgroundImage(root.transform, "VignetteLayer", null, new Color(0f, 0f, 0f, 0.07f));
         StretchFull(vignette.rectTransform);
 
-        Image overlay = CreateBackgroundImage(root.transform, "ColorOverlay", null, new Color(0.03f, 0.06f, 0.10f, 0.14f));
+        Image overlay = CreateBackgroundImage(root.transform, "ColorOverlay", null, new Color(0.78f, 0.88f, 0.78f, 0.04f));
         StretchFull(overlay.rectTransform);
         dynamicBackground.colorOverlay = overlay;
 
@@ -1262,31 +1269,70 @@ public class UIManager : MonoBehaviour
         return image;
     }
 
+    Sprite GetMainBackgroundSprite()
+    {
+        if (mainBackgroundArt != null)
+            return mainBackgroundArt;
+
+        if (runtimeBackgroundSprite != null)
+            return runtimeBackgroundSprite;
+
+        string path = Path.Combine(Application.streamingAssetsPath, "Backgrounds", DynamicBackgroundFileName);
+        if (!File.Exists(path))
+            return null;
+
+        byte[] bytes = File.ReadAllBytes(path);
+        Texture2D texture = new Texture2D(2, 2, TextureFormat.RGBA32, false);
+        if (!texture.LoadImage(bytes))
+            return null;
+
+        texture.name = "MinusOneAndOneMenuBackgroundTexture";
+        texture.wrapMode = TextureWrapMode.Clamp;
+        texture.filterMode = FilterMode.Bilinear;
+
+        runtimeBackgroundSprite = Sprite.Create(
+            texture,
+            new Rect(0f, 0f, texture.width, texture.height),
+            new Vector2(0.5f, 0.5f),
+            100f);
+        runtimeBackgroundSprite.name = "MinusOneAndOneMenuBackground";
+        return runtimeBackgroundSprite;
+    }
+
     void BuildPatternLayer(RectTransform parent, Color color, bool diagonal)
     {
         if (parent == null) return;
 
-        for (int i = -5; i <= 5; i++)
+        for (int i = -3; i <= 3; i++)
         {
-            Image line = CreateBackgroundImage(parent, diagonal ? $"DiagonalLine{i}" : $"TableLine{i}", null, color);
+            Image line = CreateBackgroundImage(parent, diagonal ? $"MistTrace{i}" : $"ClueTrace{i}", null, color);
             RectTransform rect = line.rectTransform;
             rect.anchorMin = new Vector2(0.5f, 0.5f);
             rect.anchorMax = new Vector2(0.5f, 0.5f);
             rect.pivot = new Vector2(0.5f, 0.5f);
-            rect.anchoredPosition = diagonal ? new Vector2(i * 170f, 0f) : new Vector2(0f, i * 120f);
-            rect.sizeDelta = diagonal ? new Vector2(2f, 1100f) : new Vector2(1450f, 2f);
-            rect.localRotation = diagonal ? Quaternion.Euler(0f, 0f, 28f) : Quaternion.identity;
+            float wave = Mathf.Sin(i * 1.37f);
+            rect.anchoredPosition = diagonal
+                ? new Vector2(i * 190f + wave * 42f, wave * 145f)
+                : new Vector2(wave * 170f, i * 135f + Mathf.Cos(i * 0.9f) * 36f);
+            rect.sizeDelta = diagonal
+                ? new Vector2(2f, 780f + Mathf.Abs(wave) * 260f)
+                : new Vector2(720f + Mathf.Abs(wave) * 360f, 2f);
+            rect.localRotation = diagonal
+                ? Quaternion.Euler(0f, 0f, 19f + wave * 17f)
+                : Quaternion.Euler(0f, 0f, -8f + wave * 12f);
         }
 
-        for (int i = 0; i < 8; i++)
+        for (int i = 0; i < 6; i++)
         {
             Image node = CreateBackgroundImage(parent, $"Node{i}", iconInformation, color * 1.8f);
             RectTransform rect = node.rectTransform;
             rect.anchorMin = new Vector2(0.5f, 0.5f);
             rect.anchorMax = new Vector2(0.5f, 0.5f);
             rect.pivot = new Vector2(0.5f, 0.5f);
-            rect.anchoredPosition = new Vector2(-520f + i * 150f, Mathf.Sin(i * 1.7f) * 250f);
-            rect.sizeDelta = new Vector2(18f, 18f);
+            float x = Mathf.Sin(i * 2.17f) * 510f;
+            float y = Mathf.Cos(i * 1.61f) * 260f;
+            rect.anchoredPosition = new Vector2(x, y);
+            rect.sizeDelta = new Vector2(14f + (i % 3) * 4f, 14f + (i % 2) * 5f);
         }
     }
 
@@ -1409,7 +1455,7 @@ public class UIManager : MonoBehaviour
 
         Image panelImage = mainMenuPanel.GetComponent<Image>();
         if (panelImage != null)
-            panelImage.color = new Color(0.055f, 0.071f, 0.102f, 0.82f);
+            panelImage.color = new Color(0.055f, 0.071f, 0.102f, 0.14f);
 
         LayoutGroup panelLayout = mainMenuPanel.GetComponent<LayoutGroup>();
         if (panelLayout != null)
@@ -1566,7 +1612,7 @@ public class UIManager : MonoBehaviour
 
         Image panelImage = gamePanel.GetComponent<Image>();
         if (panelImage != null)
-            panelImage.color = new Color(0.055f, 0.071f, 0.102f, 0.78f);
+            panelImage.color = new Color(0.055f, 0.071f, 0.102f, 0.32f);
 
         RectTransform panelRect = gamePanel.transform as RectTransform;
         if (panelRect != null)
@@ -1821,7 +1867,7 @@ public class UIManager : MonoBehaviour
         Image panelImage = discussionPanel.GetComponent<Image>();
         if (panelImage != null)
         {
-            panelImage.color = new Color(0.025f, 0.034f, 0.052f, discussionOverlayAlpha);
+            panelImage.color = new Color(0.025f, 0.034f, 0.052f, Mathf.Clamp(discussionOverlayAlpha, 0.32f, 0.62f));
             panelImage.raycastTarget = false;
         }
 
@@ -3071,7 +3117,7 @@ public class UIManager : MonoBehaviour
         Image panelImage = scoreGuessingPanel.GetComponent<Image>();
         if (panelImage != null)
         {
-            panelImage.color = new Color(0.055f, 0.071f, 0.102f, 0.84f);
+            panelImage.color = new Color(0.055f, 0.071f, 0.102f, 0.42f);
             panelImage.raycastTarget = true;
         }
 
@@ -3303,7 +3349,7 @@ public class UIManager : MonoBehaviour
             Image panelImage = endGamePanel.GetComponent<Image>();
             if (panelImage != null)
             {
-                panelImage.color = new Color(0.055f, 0.071f, 0.102f, 0.82f);
+                panelImage.color = new Color(0.055f, 0.071f, 0.102f, 0.38f);
                 panelImage.raycastTarget = true;
             }
 

@@ -12,14 +12,14 @@ public class DynamicBackgroundController : MonoBehaviour
     public List<DynamicBackgroundElement> ornaments = new List<DynamicBackgroundElement>();
 
     [Header("Colors")]
-    public Color defaultOverlayColor = new Color(0.03f, 0.06f, 0.10f, 0.14f);
-    public Color selectingOverlayColor = new Color(0.04f, 0.10f, 0.14f, 0.16f);
-    public Color respondingOverlayColor = new Color(0.18f, 0.05f, 0.05f, 0.18f);
-    public Color discussionOverlayColor = new Color(0.07f, 0.06f, 0.20f, 0.18f);
-    public Color scoreGuessingOverlayColor = new Color(0.18f, 0.14f, 0.05f, 0.16f);
-    public Color goodResultOverlayColor = new Color(0.10f, 0.18f, 0.08f, 0.18f);
-    public Color villainResultOverlayColor = new Color(0.22f, 0.04f, 0.04f, 0.20f);
-    public Color drawResultOverlayColor = new Color(0.08f, 0.10f, 0.14f, 0.18f);
+    public Color defaultOverlayColor = new Color(0.78f, 0.88f, 0.78f, 0.04f);
+    public Color selectingOverlayColor = new Color(0.58f, 0.82f, 0.76f, 0.06f);
+    public Color respondingOverlayColor = new Color(0.92f, 0.58f, 0.42f, 0.08f);
+    public Color discussionOverlayColor = new Color(0.56f, 0.66f, 0.92f, 0.08f);
+    public Color scoreGuessingOverlayColor = new Color(0.98f, 0.78f, 0.34f, 0.07f);
+    public Color goodResultOverlayColor = new Color(0.52f, 0.82f, 0.42f, 0.08f);
+    public Color villainResultOverlayColor = new Color(0.72f, 0.22f, 0.22f, 0.10f);
+    public Color drawResultOverlayColor = new Color(0.60f, 0.68f, 0.78f, 0.08f);
 
     [Header("Motion")]
     public float patternScrollSpeedA = 7f;
@@ -62,7 +62,7 @@ public class DynamicBackgroundController : MonoBehaviour
                 ApplyMotionIntensity(0.75f);
                 break;
             case RoundPhase.RoundEnd:
-                targetOverlayColor = new Color(0.05f, 0.08f, 0.13f, 0.22f);
+                targetOverlayColor = new Color(0.68f, 0.76f, 0.88f, 0.08f);
                 ApplyMotionIntensity(0.65f);
                 break;
             case RoundPhase.ScoreGuessing:
@@ -88,8 +88,8 @@ public class DynamicBackgroundController : MonoBehaviour
     public void SetIdentityTone(bool isVillain)
     {
         targetOverlayColor = isVillain
-            ? new Color(0.22f, 0.04f, 0.04f, 0.20f)
-            : new Color(0.11f, 0.17f, 0.08f, 0.16f);
+            ? new Color(0.78f, 0.28f, 0.24f, 0.10f)
+            : new Color(0.55f, 0.82f, 0.45f, 0.08f);
         ApplyMotionIntensity(isVillain ? 0.55f : 0.42f);
     }
 
