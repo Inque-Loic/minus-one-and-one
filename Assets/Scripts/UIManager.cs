@@ -438,6 +438,7 @@ public class UIManager : MonoBehaviour
 
         ConfigureGuideButton(quickGuideBackButton, "返回主菜单", new Vector2(-150f, -210f), new Color(0.18f, 0.227f, 0.322f, 1f), ReturnToMainMenu, ButtonSkin.Grey, iconReturn);
         ConfigureGuideButton(quickGuideContinueButton, "我知道了", new Vector2(150f, -210f), new Color(0.16f, 0.36f, 0.25f, 1f), ContinueFromQuickGuide, ButtonSkin.Green, iconCheckmark);
+        ConfigureTabletopBackdrop(quickGuidePanel.transform, "Guide", 0.08f);
     }
 
     void ConfigureGuideButton(Button button, string label, Vector2 position, Color color, UnityEngine.Events.UnityAction onClick, ButtonSkin skin, Sprite icon)
@@ -643,6 +644,8 @@ public class UIManager : MonoBehaviour
             backButton.onClick.RemoveAllListeners();
             backButton.onClick.AddListener(ReturnToMainMenu);
         }
+
+        ConfigureTabletopBackdrop(identityPanel.transform, "Identity", 0.08f);
     }
 
     RectTransform EnsureIdentityCard()
@@ -891,6 +894,7 @@ public class UIManager : MonoBehaviour
         ConfigureTestButton("BatchTestButton", "批量测试", new Vector2(0f, -150f), new Color(0.165f, 0.333f, 0.502f, 1f));
         ConfigureTestButton("ResetStatsButton", "重置统计", new Vector2(-140f, -242f), new Color(0.353f, 0.290f, 0.165f, 1f), 220f);
         ConfigureTestButton("BackButton", "返回主菜单", new Vector2(140f, -242f), new Color(0.18f, 0.227f, 0.322f, 1f), 220f);
+        ConfigureTabletopBackdrop(testMenuPanel.transform, "Test", 0.08f);
     }
 
     RectTransform EnsureTestMenuCard()
@@ -1132,6 +1136,18 @@ public class UIManager : MonoBehaviour
         return image;
     }
 
+    void ConfigureTabletopBackdrop(Transform parent, string prefix, float alpha = 0.1f)
+    {
+        if (parent == null) return;
+
+        EnsureDecorImage(parent, prefix + "BackdropCardA", cardBackGreen, new Vector2(-430f, 218f), new Vector2(92f, 132f), new Color(1f, 1f, 1f, alpha * 0.9f), false);
+        EnsureDecorImage(parent, prefix + "BackdropCardB", cardBackRed, new Vector2(430f, -218f), new Vector2(92f, 132f), new Color(1f, 1f, 1f, alpha * 0.85f), false);
+        EnsureDecorImage(parent, prefix + "BackdropChipA", chipBlue, new Vector2(350f, 206f), new Vector2(54f, 54f), new Color(1f, 1f, 1f, alpha), false);
+        EnsureDecorImage(parent, prefix + "BackdropChipB", chipGreen, new Vector2(-350f, -206f), new Vector2(56f, 56f), new Color(1f, 1f, 1f, alpha * 0.95f), false);
+        EnsureDecorImage(parent, prefix + "BackdropPieceA", GetPlayerPieceSprite(2), new Vector2(-250f, 270f), new Vector2(46f, 46f), new Color(1f, 1f, 1f, alpha * 0.9f), false);
+        EnsureDecorImage(parent, prefix + "BackdropPieceB", GetPlayerPieceSprite(4), new Vector2(250f, -270f), new Vector2(46f, 46f), new Color(1f, 1f, 1f, alpha * 0.9f), false);
+    }
+
     Sprite GetPlayerPieceSprite(int playerIndex)
     {
         if (playerPieces == null || playerPieces.Length == 0) return null;
@@ -1189,6 +1205,7 @@ public class UIManager : MonoBehaviour
 
         ConfigureMainMenuButton(startButton, "开始游戏", new Vector2(0f, 12f), new Color(0.16f, 0.36f, 0.25f, 1f), ButtonSkin.Green, iconCheckmark);
         ConfigureMainMenuButton(testButton, "游戏测试", new Vector2(0f, -92f), new Color(0.165f, 0.333f, 0.502f, 1f), ButtonSkin.Blue, iconInformation);
+        ConfigureTabletopBackdrop(mainMenuPanel.transform, "Menu", 0.11f);
     }
 
     void ConfigureMainMenuText(string objectName, string content, Vector2 position, Vector2 size, float fontSize, Color color)
@@ -1341,6 +1358,7 @@ public class UIManager : MonoBehaviour
 
         ConfigurePlayerListArea();
         ConfigureSkipButton();
+        ConfigureTabletopBackdrop(gamePanel.transform, "Game", 0.075f);
     }
 
     RectTransform EnsureGameCard(string objectName, ref Image cachedImage, Color color)
@@ -2838,6 +2856,8 @@ public class UIManager : MonoBehaviour
             guessingResultText.alignment = TextAlignmentOptions.TopLeft;
             guessingResultText.textWrappingMode = TextWrappingModes.Normal;
         }
+
+        ConfigureTabletopBackdrop(scoreGuessingPanel.transform, "Guessing", 0.07f);
     }
 
     void StyleGuessingRow(GameObject row, int playerIndex)
@@ -3089,6 +3109,9 @@ public class UIManager : MonoBehaviour
                 text.raycastTarget = false;
             }
         }
+
+        if (endGamePanel != null)
+            ConfigureTabletopBackdrop(endGamePanel.transform, "EndGame", 0.09f);
     }
 
     Transform FindChildRecursive(Transform parent, string childName)
