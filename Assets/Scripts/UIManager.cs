@@ -99,6 +99,13 @@ public class UIManager : MonoBehaviour
     public Sprite cardBackRed;
     public Sprite[] playerPieces;
 
+    [Header("讨论页布局调试")]
+    public float discussionOverlayAlpha = 0.86f;
+    public Vector2 discussionMessageIconPosition = new Vector2(-250f, 0f);
+    public Vector2 discussionMessageIconSize = new Vector2(22f, 22f);
+    public Vector2 discussionMessageTextOffsetMin = new Vector2(64f, 4f);
+    public Vector2 discussionMessageTextOffsetMax = new Vector2(-12f, -4f);
+
     private List<Button> playerButtons = new List<Button>();
     private bool isBatchRunning = false;
     private int batchRemaining = 0;
@@ -1543,7 +1550,7 @@ public class UIManager : MonoBehaviour
         Image panelImage = discussionPanel.GetComponent<Image>();
         if (panelImage != null)
         {
-            panelImage.color = new Color(0.025f, 0.034f, 0.052f, 0.86f);
+            panelImage.color = new Color(0.025f, 0.034f, 0.052f, discussionOverlayAlpha);
             panelImage.raycastTarget = false;
         }
 
@@ -2566,7 +2573,7 @@ public class UIManager : MonoBehaviour
         if (discussionMessageContainer == null || discussionMessagePrefab == null) return;
         GameObject item = Instantiate(discussionMessagePrefab, discussionMessageContainer);
         Sprite icon = ResolveDiscussionIconFromText(text);
-        Image iconImage = EnsureDecorImage(item.transform, "MessageTypeIcon", icon, new Vector2(-250f, 0f), new Vector2(22f, 22f), new Color(1f, 1f, 1f, 0.86f));
+        Image iconImage = EnsureDecorImage(item.transform, "MessageTypeIcon", icon, discussionMessageIconPosition, discussionMessageIconSize, new Color(1f, 1f, 1f, 0.86f));
         if (iconImage != null)
             iconImage.transform.SetAsLastSibling();
 
@@ -2583,8 +2590,8 @@ public class UIManager : MonoBehaviour
             RectTransform tmpRect = tmp.rectTransform;
             tmpRect.anchorMin = new Vector2(0f, 0f);
             tmpRect.anchorMax = new Vector2(1f, 1f);
-            tmpRect.offsetMin = new Vector2(64f, 4f);
-            tmpRect.offsetMax = new Vector2(-12f, -4f);
+            tmpRect.offsetMin = discussionMessageTextOffsetMin;
+            tmpRect.offsetMax = discussionMessageTextOffsetMax;
         }
 
         Image itemImage = item.GetComponent<Image>();

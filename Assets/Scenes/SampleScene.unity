@@ -3103,6 +3103,11 @@ MonoBehaviour:
   - {fileID: -932569834038894545, guid: 77808319c9e695b41bbc0acde0953b1e, type: 3}
   - {fileID: 2753113972313182535, guid: 27960f3a64ee3ca49bb11c2e4f920889, type: 3}
   - {fileID: 9109065676890321632, guid: eb9f63eebc04c814bb718c0833ce9f9a, type: 3}
+  discussionOverlayAlpha: 0.86
+  discussionMessageIconPosition: {x: -250, y: 0}
+  discussionMessageIconSize: {x: 22, y: 22}
+  discussionMessageTextOffsetMin: {x: 64, y: 4}
+  discussionMessageTextOffsetMax: {x: -12, y: -4}
 --- !u!4 &421093418
 Transform:
   m_ObjectHideFlags: 0
