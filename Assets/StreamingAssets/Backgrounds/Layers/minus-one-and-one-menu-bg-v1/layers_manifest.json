@@ -1,0 +1,93 @@
+{
+  "source": "D:\\unity\\project\\负一和一\\Assets\\StreamingAssets\\Backgrounds\\minus-one-and-one-menu-bg-v1.png",
+  "createdFor": "Unity first-pass layered menu background",
+  "canvasSize": [
+    1672,
+    941
+  ],
+  "coordinateOrigin": "top-left in source image; Unity sprites share same full canvas for alignment",
+  "notes": [
+    "First-pass masks from a single flattened image; edges are feathered and intentionally conservative.",
+    "These are full-canvas transparent PNGs so parallax layers line up without manual offset.",
+    "Background layers are not inpainted behind nearer objects; use static_fallback for exact original display."
+  ],
+  "layers": [
+    {
+      "order": 0,
+      "name": "static_fallback",
+      "file": "00_static_fallback.png",
+      "description": "Exact original image for fallback or comparison.",
+      "canvasSize": [
+        1672,
+        941
+      ],
+      "unityHint": "Use as non-layered static background."
+    },
+    {
+      "order": 10,
+      "name": "sky_daylight_background",
+      "file": "10_sky_daylight_background.png",
+      "description": "Sky, sun glow, and high distant atmosphere plate; foreground bamboo is removed from alpha.",
+      "canvasSize": [
+        1672,
+        941
+      ],
+      "unityHint": "Use full-size Sprite/UI Image with same pivot/anchor for direct alignment."
+    },
+    {
+      "order": 20,
+      "name": "mid_palace_mountains",
+      "file": "20_mid_palace_mountains.png",
+      "description": "Middle-distance palace, cliffs, mountain silhouettes, and visible structures.",
+      "canvasSize": [
+        1672,
+        941
+      ],
+      "unityHint": "Use full-size Sprite/UI Image with same pivot/anchor for direct alignment."
+    },
+    {
+      "order": 30,
+      "name": "cloud_fog",
+      "file": "30_cloud_fog.png",
+      "description": "Soft cloud and fog layer for slow drift or opacity animation.",
+      "canvasSize": [
+        1672,
+        941
+      ],
+      "unityHint": "Use full-size Sprite/UI Image with same pivot/anchor for direct alignment."
+    },
+    {
+      "order": 40,
+      "name": "foreground_bamboo_leaves",
+      "file": "40_foreground_bamboo_leaves.png",
+      "description": "Foreground bamboo and hanging leaves, including right-side bamboo edge.",
+      "canvasSize": [
+        1672,
+        941
+      ],
+      "unityHint": "Use full-size Sprite/UI Image with same pivot/anchor for direct alignment."
+    },
+    {
+      "order": 50,
+      "name": "foreground_left_tabletop",
+      "file": "50_foreground_left_tabletop.png",
+      "description": "Bottom-left tabletop, cards, tokens, box, and nearby plants.",
+      "canvasSize": [
+        1672,
+        941
+      ],
+      "unityHint": "Use full-size Sprite/UI Image with same pivot/anchor for direct alignment."
+    },
+    {
+      "order": 60,
+      "name": "foreground_right_tower_incense",
+      "file": "60_foreground_right_tower_incense.png",
+      "description": "Bottom-right tower pavilion, railing/platform, incense burner, smoke, and nearby foliage.",
+      "canvasSize": [
+        1672,
+        941
+      ],
+      "unityHint": "Use full-size Sprite/UI Image with same pivot/anchor for direct alignment."
+    }
+  ]
+}

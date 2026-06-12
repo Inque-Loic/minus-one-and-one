@@ -1,0 +1,39 @@
+{
+  "sourceGeneratedImage": "C:/Users/76606/.codex/generated_images/019eb328-101f-7483-bdb8-4a63a4d57439/ig_02e46986b6a0d34f016a29c95c18688191a0a9555075017eb3.png",
+  "backgroundRemoval": "remove_chroma_key.py, key #ff00ff, soft matte, despill, edge-contract 1",
+  "assets": [
+    {
+      "name": "xianxia_card_back",
+      "file": "xianxia_card_back.png",
+      "size": [
+        475,
+        741
+      ]
+    },
+    {
+      "name": "xianxia_jade_pawn",
+      "file": "xianxia_jade_pawn.png",
+      "size": [
+        377,
+        682
+      ]
+    },
+    {
+      "name": "xianxia_jade_chip",
+      "file": "xianxia_jade_chip.png",
+      "size": [
+        499,
+        499
+      ]
+    },
+    {
+      "name": "sheet",
+      "file": "xianxia_game_pieces_sheet.png",
+      "size": [
+        1693,
+        929
+      ]
+    }
+  ],
+  "unityHint": "Import as Sprite (2D and UI). Use individual PNGs for card, pawn, and chip replacements."
+}

@@ -1,9 +1,11 @@
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.Video;
 using TMPro;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using UnityEngine.EventSystems;
 
 public class UIManager : MonoBehaviour
 {
@@ -113,6 +115,15 @@ public class UIManager : MonoBehaviour
     [Header("Dynamic Background")]
     public DynamicBackgroundController dynamicBackground;
     public Sprite mainBackgroundArt;
+
+    [Header("Video Background")]
+    public VideoClip mainMenuBackgroundVideo;
+    public RenderTexture mainMenuBackgroundRenderTexture;
+    public RawImage mainMenuVideoBackgroundImage;
+    public VideoPlayer mainMenuBackgroundVideoPlayer;
+
+    const string MainMenuBackgroundVideoPath = "Assets/Video/main_menu_bg_v28c.mp4";
+    const string MainMenuBackgroundRenderTexturePath = "Assets/Video/MainMenuBackgroundRT.renderTexture";
 
     private List<Button> playerButtons = new List<Button>();
     private bool isBatchRunning = false;
@@ -1156,12 +1167,16 @@ public class UIManager : MonoBehaviour
 
     void EnsureDynamicBackground()
     {
+        DisableLegacyDynamicBackground();
+        EnsureMainMenuVideoBackground();
+    }
+
+    void DisableLegacyDynamicBackground()
+    {
         if (dynamicBackground != null)
         {
-            dynamicBackground.transform.SetAsFirstSibling();
-            RefreshDynamicBackgroundBaseImage();
-            RemoveLegacyTabletopBackdrops();
-            return;
+            dynamicBackground.gameObject.SetActive(false);
+            dynamicBackground = null;
         }
 
         Transform uiRoot = GetUiRootTransform();
@@ -1169,63 +1184,120 @@ public class UIManager : MonoBehaviour
 
         Transform existing = uiRoot.Find("DynamicBackground");
         if (existing != null)
+            existing.gameObject.SetActive(false);
+    }
+
+    void EnsureMainMenuVideoBackground()
+    {
+        Transform uiRoot = GetUiRootTransform();
+        if (uiRoot == null) return;
+
+#if UNITY_EDITOR
+        EnsureEditorVideoBackgroundAssets();
+#endif
+
+        GameObject backgroundObject = mainMenuVideoBackgroundImage != null ? mainMenuVideoBackgroundImage.gameObject : null;
+        if (backgroundObject == null)
         {
-            dynamicBackground = existing.GetComponent<DynamicBackgroundController>();
-            if (dynamicBackground != null)
-            {
-                dynamicBackground.transform.SetAsFirstSibling();
-                RefreshDynamicBackgroundBaseImage();
-                RemoveLegacyTabletopBackdrops();
-                return;
-            }
+            Transform existing = uiRoot.Find("MainMenuVideoBackground");
+            if (existing != null)
+                backgroundObject = existing.gameObject;
         }
 
-        GameObject root = new GameObject("DynamicBackground", typeof(RectTransform), typeof(CanvasGroup), typeof(DynamicBackgroundController));
-        root.transform.SetParent(uiRoot, false);
-        ApplyGuideLayer(root);
-        StretchFull(root.GetComponent<RectTransform>());
-        root.transform.SetAsFirstSibling();
+        if (backgroundObject == null)
+        {
+            backgroundObject = new GameObject("MainMenuVideoBackground", typeof(RectTransform), typeof(CanvasGroup), typeof(RawImage));
+            backgroundObject.transform.SetParent(uiRoot, false);
+            ApplyGuideLayer(backgroundObject);
+        }
 
-        CanvasGroup rootGroup = root.GetComponent<CanvasGroup>();
-        rootGroup.interactable = false;
-        rootGroup.blocksRaycasts = false;
+        backgroundObject.name = "MainMenuVideoBackground";
+        backgroundObject.SetActive(true);
+        backgroundObject.transform.SetAsFirstSibling();
 
-        dynamicBackground = root.GetComponent<DynamicBackgroundController>();
+        RectTransform backgroundRect = backgroundObject.GetComponent<RectTransform>();
+        if (backgroundRect != null)
+            StretchFull(backgroundRect);
 
-        Sprite backgroundSprite = GetMainBackgroundSprite();
-        Image baseImage = CreateBackgroundImage(root.transform, "BaseLayer", backgroundSprite, backgroundSprite != null ? Color.white : new Color(0.60f, 0.70f, 0.64f, 1f));
-        StretchFull(baseImage.rectTransform);
-        baseImage.preserveAspect = false;
-        dynamicBackground.baseImage = baseImage;
+        CanvasGroup canvasGroup = backgroundObject.GetComponent<CanvasGroup>();
+        if (canvasGroup == null)
+            canvasGroup = backgroundObject.AddComponent<CanvasGroup>();
+        canvasGroup.alpha = 1f;
+        canvasGroup.interactable = false;
+        canvasGroup.blocksRaycasts = false;
 
-        RectTransform patternA = CreateBackgroundGroup(root.transform, "PatternA");
-        RectTransform patternB = CreateBackgroundGroup(root.transform, "PatternB");
-        BuildPatternLayer(patternA, new Color(0.78f, 0.86f, 0.95f, 0.020f), true);
-        BuildPatternLayer(patternB, new Color(0.95f, 0.76f, 0.28f, 0.018f), false);
-        dynamicBackground.patternA = patternA;
-        dynamicBackground.patternB = patternB;
+        mainMenuVideoBackgroundImage = backgroundObject.GetComponent<RawImage>();
+        if (mainMenuVideoBackgroundImage == null)
+            mainMenuVideoBackgroundImage = backgroundObject.AddComponent<RawImage>();
+        mainMenuVideoBackgroundImage.texture = mainMenuBackgroundRenderTexture;
+        mainMenuVideoBackgroundImage.color = Color.white;
+        mainMenuVideoBackgroundImage.raycastTarget = false;
 
-        RectTransform ornamentLayer = CreateBackgroundGroup(root.transform, "OrnamentLayer");
-        AddBackgroundOrnament(ornamentLayer, "CardGreenA", cardBackGreen, new Vector2(-520f, 235f), new Vector2(108f, 154f), 0.08f, 0f, 1.4f);
-        AddBackgroundOrnament(ornamentLayer, "CardRedA", cardBackRed, new Vector2(525f, -230f), new Vector2(108f, 154f), 0.075f, 12f, 2.1f);
-        AddBackgroundOrnament(ornamentLayer, "CardRedB", cardBackRed, new Vector2(390f, 255f), new Vector2(82f, 116f), 0.06f, -9f, 3.4f);
-        AddBackgroundOrnament(ornamentLayer, "ChipBlueA", chipBlue, new Vector2(-410f, -245f), new Vector2(64f, 64f), 0.12f, 0f, 4.3f);
-        AddBackgroundOrnament(ornamentLayer, "ChipGreenA", chipGreen, new Vector2(270f, -290f), new Vector2(58f, 58f), 0.10f, 0f, 5.6f);
-        AddBackgroundOrnament(ornamentLayer, "ChipRedA", chipRed, new Vector2(-250f, 290f), new Vector2(54f, 54f), 0.09f, 0f, 6.8f);
-        AddBackgroundOrnament(ornamentLayer, "PieceBlue", GetPlayerPieceSprite(1), new Vector2(-585f, -70f), new Vector2(48f, 48f), 0.12f, 0f, 8.1f);
-        AddBackgroundOrnament(ornamentLayer, "PieceGreen", GetPlayerPieceSprite(2), new Vector2(590f, 80f), new Vector2(48f, 48f), 0.11f, 0f, 9.2f);
-        AddBackgroundOrnament(ornamentLayer, "PiecePurple", GetPlayerPieceSprite(4), new Vector2(-85f, -310f), new Vector2(42f, 42f), 0.09f, 0f, 10.5f);
-        AddBackgroundOrnament(ornamentLayer, "PieceWhite", GetPlayerPieceSprite(5), new Vector2(95f, 310f), new Vector2(42f, 42f), 0.08f, 0f, 11.7f);
+        GameObject playerObject = mainMenuBackgroundVideoPlayer != null ? mainMenuBackgroundVideoPlayer.gameObject : null;
+        if (playerObject == null)
+        {
+            Transform existingPlayer = backgroundObject.transform.Find("MainMenuBackgroundVideoPlayer");
+            if (existingPlayer != null)
+                playerObject = existingPlayer.gameObject;
+        }
 
-        Image vignette = CreateBackgroundImage(root.transform, "VignetteLayer", null, new Color(0f, 0f, 0f, 0.07f));
-        StretchFull(vignette.rectTransform);
+        if (playerObject == null)
+        {
+            playerObject = new GameObject("MainMenuBackgroundVideoPlayer", typeof(VideoPlayer));
+            playerObject.transform.SetParent(backgroundObject.transform, false);
+        }
 
-        Image overlay = CreateBackgroundImage(root.transform, "ColorOverlay", null, new Color(0.78f, 0.88f, 0.78f, 0.04f));
-        StretchFull(overlay.rectTransform);
-        dynamicBackground.colorOverlay = overlay;
+        playerObject.name = "MainMenuBackgroundVideoPlayer";
+        playerObject.SetActive(true);
+        mainMenuBackgroundVideoPlayer = playerObject.GetComponent<VideoPlayer>();
+        if (mainMenuBackgroundVideoPlayer == null)
+            mainMenuBackgroundVideoPlayer = playerObject.AddComponent<VideoPlayer>();
+
+        mainMenuBackgroundVideoPlayer.source = VideoSource.VideoClip;
+        mainMenuBackgroundVideoPlayer.clip = mainMenuBackgroundVideo;
+        mainMenuBackgroundVideoPlayer.renderMode = VideoRenderMode.APIOnly;
+        mainMenuBackgroundVideoPlayer.targetTexture = mainMenuBackgroundRenderTexture;
+        mainMenuBackgroundVideoPlayer.aspectRatio = VideoAspectRatio.Stretch;
+        mainMenuBackgroundVideoPlayer.timeUpdateMode = VideoTimeUpdateMode.UnscaledGameTime;
+        mainMenuBackgroundVideoPlayer.playOnAwake = true;
+        mainMenuBackgroundVideoPlayer.isLooping = true;
+        mainMenuBackgroundVideoPlayer.waitForFirstFrame = false;
+        mainMenuBackgroundVideoPlayer.skipOnDrop = true;
+        mainMenuBackgroundVideoPlayer.audioOutputMode = VideoAudioOutputMode.None;
+
+        MainMenuVideoBackgroundController controller = backgroundObject.GetComponent<MainMenuVideoBackgroundController>();
+        if (controller == null)
+            controller = backgroundObject.AddComponent<MainMenuVideoBackgroundController>();
+        controller.rawImage = mainMenuVideoBackgroundImage;
+        controller.videoPlayer = mainMenuBackgroundVideoPlayer;
+        controller.videoClip = mainMenuBackgroundVideo;
+        controller.renderTexture = mainMenuBackgroundRenderTexture;
 
         RemoveLegacyTabletopBackdrops();
     }
+
+#if UNITY_EDITOR
+    void EnsureEditorVideoBackgroundAssets()
+    {
+        if (mainMenuBackgroundVideo == null)
+            mainMenuBackgroundVideo = UnityEditor.AssetDatabase.LoadAssetAtPath<VideoClip>(MainMenuBackgroundVideoPath);
+
+        if (mainMenuBackgroundRenderTexture == null)
+        {
+            mainMenuBackgroundRenderTexture = UnityEditor.AssetDatabase.LoadAssetAtPath<RenderTexture>(MainMenuBackgroundRenderTexturePath);
+
+            if (mainMenuBackgroundRenderTexture == null)
+            {
+                mainMenuBackgroundRenderTexture = new RenderTexture(1920, 1080, 0, RenderTextureFormat.ARGB32);
+                mainMenuBackgroundRenderTexture.name = "MainMenuBackgroundRT";
+                mainMenuBackgroundRenderTexture.wrapMode = TextureWrapMode.Clamp;
+                mainMenuBackgroundRenderTexture.filterMode = FilterMode.Bilinear;
+                UnityEditor.AssetDatabase.CreateAsset(mainMenuBackgroundRenderTexture, MainMenuBackgroundRenderTexturePath);
+                UnityEditor.AssetDatabase.SaveAssets();
+            }
+        }
+    }
+#endif
 
     void RefreshDynamicBackgroundBaseImage()
     {
@@ -1418,6 +1490,28 @@ public class UIManager : MonoBehaviour
             RemoveLegacyBackdropsFrom(panel);
     }
 
+    void DisableMainMenuBackgroundDecor()
+    {
+        if (mainMenuPanel == null) return;
+
+        string[] backgroundNames =
+        {
+            "MenuCardDecorLeft",
+            "MenuCardDecorRight",
+            "Background",
+            "BackgroundImage",
+            "StaticBackground",
+            "DecorBackground"
+        };
+
+        foreach (string objectName in backgroundNames)
+        {
+            Transform child = mainMenuPanel.transform.Find(objectName);
+            if (child != null)
+                child.gameObject.SetActive(false);
+        }
+    }
+
     void RemoveLegacyBackdropsFrom(Transform parent)
     {
         if (parent == null) return;
@@ -1483,10 +1577,14 @@ public class UIManager : MonoBehaviour
         if (mainMenuPanel == null) return;
         EnsureQuickGuidePanel();
         RemoveLegacyTabletopBackdrops();
+        DisableMainMenuBackgroundDecor();
 
         Image panelImage = mainMenuPanel.GetComponent<Image>();
         if (panelImage != null)
-            panelImage.color = new Color(0.055f, 0.071f, 0.102f, 0.14f);
+        {
+            panelImage.color = new Color(0f, 0f, 0f, 0f);
+            panelImage.raycastTarget = false;
+        }
 
         LayoutGroup panelLayout = mainMenuPanel.GetComponent<LayoutGroup>();
         if (panelLayout != null)
@@ -1508,12 +1606,11 @@ public class UIManager : MonoBehaviour
         RectTransform cardRect = EnsureMainMenuCard();
         if (cardRect != null)
         {
-            SetRect(cardRect, new Vector2(0f, -4f), new Vector2(700f, 440f));
+            SetRect(cardRect, new Vector2(-430f, 20f), new Vector2(420f, 320f));
             cardRect.SetAsFirstSibling();
+            cardRect.gameObject.SetActive(false);
         }
 
-        EnsureDecorImage(mainMenuPanel.transform, "MenuCardDecorLeft", cardBackGreen, new Vector2(-300f, 128f), new Vector2(78f, 112f), new Color(1f, 1f, 1f, 0.12f), false);
-        EnsureDecorImage(mainMenuPanel.transform, "MenuCardDecorRight", cardBackRed, new Vector2(300f, -124f), new Vector2(78f, 112f), new Color(1f, 1f, 1f, 0.10f), false);
 
         ConfigureMainMenuText("MainMenuTitle", "负一和一", new Vector2(0f, 150f), new Vector2(520f, 70f), 44f, new Color(0.965f, 0.82f, 0.32f, 1f));
         ConfigureMainMenuText("MainMenuSubtitle", "在接触、声明与猜分之间识破负一", new Vector2(0f, 96f), new Vector2(520f, 40f), 21f, new Color(0.82f, 0.86f, 0.92f, 1f));
@@ -1529,16 +1626,16 @@ public class UIManager : MonoBehaviour
     {
         if (objectName == "MainMenuTitle")
         {
-            position = new Vector2(0f, 144f);
-            size = new Vector2(560f, 76f);
-            fontSize = 48f;
+            position = new Vector2(-430f, 172f);
+            size = new Vector2(520f, 74f);
+            fontSize = 44f;
             color = new Color(0.98f, 0.78f, 0.28f, 1f);
         }
         else if (objectName == "MainMenuSubtitle")
         {
-            position = new Vector2(0f, 88f);
-            size = new Vector2(560f, 40f);
-            fontSize = 21f;
+            position = new Vector2(-430f, 114f);
+            size = new Vector2(520f, 42f);
+            fontSize = 18f;
             color = new Color(0.94f, 0.95f, 0.88f, 0.96f);
         }
 
@@ -1565,9 +1662,9 @@ public class UIManager : MonoBehaviour
         text.text = content;
         text.fontSize = fontSize;
         text.color = color;
-        text.alignment = TextAlignmentOptions.Center;
+        text.alignment = TextAlignmentOptions.Left;
         text.raycastTarget = false;
-        text.overflowMode = TextOverflowModes.Truncate;
+        text.overflowMode = TextOverflowModes.Overflow;
         ApplyChineseFont(text);
         ApplyMainMenuTextEffects(text, objectName == "MainMenuTitle");
     }
@@ -1622,17 +1719,19 @@ public class UIManager : MonoBehaviour
             mainMenuCardImage = existing.GetComponent<Image>();
             if (mainMenuCardImage != null)
             {
-                mainMenuCardImage.color = new Color(0.96f, 0.94f, 0.78f, 0.13f);
+                mainMenuCardImage.color = new Color(0f, 0f, 0f, 0f);
                 mainMenuCardImage.raycastTarget = false;
             }
+            existing.gameObject.SetActive(false);
             return existing as RectTransform;
         }
 
         GameObject card = new GameObject("MainMenuCard", typeof(RectTransform), typeof(Image));
         card.transform.SetParent(mainMenuPanel.transform, false);
         mainMenuCardImage = card.GetComponent<Image>();
-        mainMenuCardImage.color = new Color(0.96f, 0.94f, 0.78f, 0.13f);
+        mainMenuCardImage.color = new Color(0f, 0f, 0f, 0f);
         mainMenuCardImage.raycastTarget = false;
+        card.SetActive(false);
         return card.GetComponent<RectTransform>();
     }
 
@@ -1641,52 +1740,57 @@ public class UIManager : MonoBehaviour
         if (buttonTransform == null) return;
 
         bool isStartButton = buttonTransform.name.Contains("Start");
-        position = isStartButton ? new Vector2(0f, 2f) : new Vector2(0f, -84f);
-        color = isStartButton
-            ? new Color(0.92f, 0.74f, 0.30f, 0.72f)
-            : new Color(0.70f, 0.82f, 0.76f, 0.56f);
-        skin = isStartButton ? ButtonSkin.Yellow : ButtonSkin.Grey;
+        position = isStartButton ? new Vector2(-430f, 34f) : new Vector2(-430f, -28f);
+        Color normalTextColor = isStartButton
+            ? new Color(1f, 0.96f, 0.78f, 1f)
+            : new Color(0.92f, 0.96f, 0.94f, 0.96f);
+        Color hoverTextColor = isStartButton
+            ? new Color(1f, 0.86f, 0.30f, 1f)
+            : new Color(0.78f, 1f, 0.91f, 1f);
 
-        SetRect(buttonTransform, position, new Vector2(360f, 62f));
+        SetRect(buttonTransform, position, new Vector2(360f, 50f));
+        buttonTransform.localScale = Vector3.one;
         buttonTransform.SetAsLastSibling();
 
         Button button = buttonTransform.GetComponent<Button>();
         if (button != null)
         {
-            ApplyButtonArt(button, skin, color);
             Image image = button.GetComponent<Image>();
             if (image != null)
             {
-                image.color = color;
+                image.sprite = null;
+                image.type = Image.Type.Simple;
+                image.color = new Color(1f, 1f, 1f, 0f);
                 image.raycastTarget = true;
+                button.targetGraphic = image;
             }
 
             button.interactable = true;
-            ColorBlock colors = button.colors;
-            colors.normalColor = Color.white;
-            colors.highlightedColor = new Color(1.12f, 1.05f, 0.82f, 1f);
-            colors.pressedColor = new Color(0.82f, 0.74f, 0.56f, 1f);
-            colors.selectedColor = colors.normalColor;
-            colors.disabledColor = new Color(1f, 1f, 1f, 0.6f);
-            colors.fadeDuration = 0.06f;
-            button.colors = colors;
+            button.transition = Selectable.Transition.None;
         }
 
-        EnsureDecorImage(buttonTransform, "Icon", icon, new Vector2(-116f, 0f), new Vector2(28f, 28f), new Color(1f, 0.98f, 0.82f, 0.92f));
+        Transform iconTransform = buttonTransform.Find("Icon");
+        if (iconTransform != null)
+            iconTransform.gameObject.SetActive(false);
 
         TextMeshProUGUI text = buttonTransform.GetComponentInChildren<TextMeshProUGUI>(true);
         if (text != null)
         {
             text.enabled = true;
             text.text = label;
-            text.fontSize = 27f;
-            text.color = isStartButton
-                ? new Color(1f, 0.98f, 0.84f, 1f)
-                : new Color(0.95f, 0.99f, 0.96f, 0.98f);
-            text.alignment = TextAlignmentOptions.Center;
+            text.fontSize = 28f;
+            text.color = normalTextColor;
+            text.alignment = TextAlignmentOptions.MidlineLeft;
             text.raycastTarget = false;
+            text.overflowMode = TextOverflowModes.Overflow;
             text.outlineWidth = 0.12f;
             text.outlineColor = new Color(0.05f, 0.08f, 0.06f, 0.82f);
+
+            RectTransform textRect = text.rectTransform;
+            textRect.anchorMin = Vector2.zero;
+            textRect.anchorMax = Vector2.one;
+            textRect.offsetMin = new Vector2(42f, 0f);
+            textRect.offsetMax = Vector2.zero;
 
             Shadow shadow = text.GetComponent<Shadow>();
             if (shadow == null)
@@ -1694,7 +1798,35 @@ public class UIManager : MonoBehaviour
             shadow.effectColor = new Color(0.02f, 0.04f, 0.04f, 0.68f);
             shadow.effectDistance = new Vector2(1.8f, -1.8f);
             shadow.useGraphicAlpha = true;
+
+            ConfigureMainMenuTextHover(buttonTransform, text, normalTextColor, hoverTextColor);
         }
+    }
+
+    void ConfigureMainMenuTextHover(Transform buttonTransform, TextMeshProUGUI text, Color normalTextColor, Color hoverTextColor)
+    {
+        if (buttonTransform == null || text == null) return;
+
+        MainMenuTextHoverEffect hover = buttonTransform.GetComponent<MainMenuTextHoverEffect>();
+        if (hover == null)
+            hover = buttonTransform.gameObject.AddComponent<MainMenuTextHoverEffect>();
+
+        hover.hoverOffset = new Vector2(28f, 0f);
+        hover.hoverScale = 1.12f;
+        hover.speed = 16f;
+        hover.Configure(buttonTransform as RectTransform, text, normalTextColor, hoverTextColor, hoverTextColor);
+    }
+
+    void ResetMainMenuTextHoverStates()
+    {
+        if (mainMenuPanel == null) return;
+
+        if (EventSystem.current != null)
+            EventSystem.current.SetSelectedGameObject(null);
+
+        MainMenuTextHoverEffect[] hoverEffects = mainMenuPanel.GetComponentsInChildren<MainMenuTextHoverEffect>(true);
+        foreach (MainMenuTextHoverEffect hoverEffect in hoverEffects)
+            hoverEffect.ResetVisualState();
     }
 
     void ConfigureGameLayout()
@@ -3526,6 +3658,7 @@ public class UIManager : MonoBehaviour
         if (mainMenuPanel != null) mainMenuPanel.SetActive(true);
         SetBackgroundMainMenu();
         ConfigureMainMenuLayout();
+        ResetMainMenuTextHoverStates();
     }
 
     void SetResponsePanelActive(bool active)
